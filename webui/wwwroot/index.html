@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>Printer Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Printer Status</h1>
+    <div class="status-block">
+        <h2 id="currentJob">Current Job</h2>
+        <div class="status-grid">
+            <!-- Status Items -->
+            <div class="status-item">
+                <p id="eta">ETA: --</p>
+            </div>
+            <div class="status-item">
+                <p id="progress">Progress: --</p>
+            </div>
+            <div class="status-item">
+                <p id="extruderTemp">Extruder Temp: --&deg;C</p>
+            </div>
+            <div class="status-item">
+                <p id="bedTemp">Bed Temp: --&deg;C</p>
+            </div>
+            <div class="status-item">
+                <p id="filamentUsed">Filament Used: --</p>
+            </div>
+            <div class="status-item">
+                <p id="totalRunTime">Total Run Time: --</p>
+            </div>
+            <div class="status-item">
+                <p id="printerStatus">Printer Status: --</p>
+            </div>
+            <div class="status-item">
+                <p id="layerInfo">Layer Info: --</p>
+            </div>
+            <div class="status-item">
+                <p id="weight">Weight: --</p>
+            </div>
+            <div class="status-item">
+                <p id="length">Length: --</p>
+            </div>
+            <div class="status-item">
+                <p id="coolingFanSpeed">Cooling Fan Speed: --</p>
+            </div>
+            <div class="status-item">
+                <p id="chamberFanSpeed">Chamber Fan Speed: --</p>
+            </div>
+            <div class="status-item">
+                <p id="filtrationStatus">Filtration Status: --</p>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+        <img id="webcam" src="http://REPLACE_PRINTER_IP:8080/?action=stream" alt="Webcam Stream" />
+    </div>
+    <div class="button-block">
+        <button id="toggleWebcam" onclick="toggleWebcam()">Toggle Webcam</button>
+        <button onclick='sendCommand("pauseJob")'>Pause Job</button>
+        <button onclick='sendCommand("resumeJob")'>Resume Job</button>
+        <button onclick='sendCommand("stopJob")'>Stop Job</button>
+        <button onclick='sendCommand("homeAxes")'>Home Axes</button>
+        <button onclick='promptForValue("setCoolingFanSpeed", "Set Cooling Fan Speed (0-100)", "speed")'>Set Cooling Fan</button>
+        <button id="setChamberFanSpeed" onclick='promptForValue("setChamberFanSpeed", "Set Chamber Fan Speed (0-100)", "speed")'>Set Chamber Fan</button>
+        <button onclick='promptForValue("setBedTemp", "Set Bed Temperature (max 100°C)", "temp")'>Set Bed Temp</button>
+        <button onclick='promptForValue("setExtruderTemp", "Set Extruder Temperature (max 280°C)", "temp")'>Set Extruder Temp</button>
+        <button onclick='promptForValue("setZAxisOffset", "Set Z Axis Offset", "offset")'>Set Z Axis Offset</button>
+        <button id="setLedOn" onclick='sendCommand("turnLedOn")'>Turn LED On</button>
+        <button id="setLedOff" onclick='sendCommand("turnLedOff")'>Turn LED Off</button>
+        <button onclick='sendCommand("cancelBedHeating")'>Cancel Bed Heating</button>
+        <button onclick='sendCommand("cancelExtruderHeating")'>Cancel Extruder Heating</button>
+        <button id="setExternalFiltration" onclick='sendCommand("setExternalFiltrationOn")'>External Filtration On</button>
+        <button id="setInternalFiltration" onclick='sendCommand("setInternalFiltrationOn")'>Internal Filtration On</button>
+        <button id="setFiltrationOff" onclick='sendCommand("setFiltrationOff")'>Filtration Off</button>
+        <button onclick='showFileSelection("recent")'>Start Recent Job</button>
+        <button onclick='showFileSelection("local")'>Start Local Job</button>
+    </div>
+    <div id="log">
+        <p><strong>Log:</strong></p>
+    </div>
+</div>
+
+<!-- File Selection Modal -->
+<div id="fileSelectionModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="modalTitle">Select a File</h2>
+        <div class="file-list" id="fileList">
+            <!-- Dynamic file items will be inserted here -->
+        </div>
+        <label>
+            Auto Level
+            <input type="checkbox" id="autoLevelCheckbox">
+        </label>
+        <button onclick="startPrintJob()" disabled>Start Print Job</button>
+        <button onclick="closeFileList()">Cancel</button>
+    </div>
+</div>
+
+<!-- Loading spinner overlay -->
+<div id="spinnerOverlay" class="spinner-overlay hidden">
+    <h2 class="spinner-text" id="spinnerTitle">Select a File</h2>
+    <div class="spinner"></div>
+</div>
+
+<script src="js/script.js"></script>
+<script src="js/file-selection.js"></script>
+</body>
+</html>
