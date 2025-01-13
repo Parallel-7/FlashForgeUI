@@ -1,8 +1,9 @@
 # FlashForgeUI
-Monitoring &amp; Control software for FlashForge printers in C#, powered by [this](https://github.com/CopeTypes/ff-5mp-api) API
-
-# Read Me
-This software is currently undergoing a rewrite/cleanup and will be published soon. All features shown are working/implemented at this time and planned to be included.
+*WIP* Monitoring &amp; Control software for FlashForge printers, powered by [this](https://github.com/CopeTypes/ff-5mp-api) API
+![image](https://github.com/user-attachments/assets/6c7298f7-7e8f-45d0-b92b-210a944407ca)
+![image](https://github.com/user-attachments/assets/ab6d4007-a5ee-4344-a403-3a22f3fb3c21)
+![image](https://github.com/user-attachments/assets/97f5e9b0-004c-41ff-99d9-86570c5572e4)
+![image](https://github.com/user-attachments/assets/4970d19d-c640-46fe-b3b6-c673b811ed6a)
 
 
 ## Features
@@ -20,7 +21,7 @@ This software is currently undergoing a rewrite/cleanup and will be published so
    - Home axes (not present in any FlashForge software for some reason..)
    - Send custom G/MCode 
    - Control built-in LEDs
-   - Pause/Resume/Stop current job
+   - Pause/Resume/Stop current job & clear cancelled/completed job state
    - Upload new job (.gcode or .3mf) or start a local job (from printer storage)
    - Filament swap routine (WIP)
 
@@ -30,20 +31,7 @@ This software is currently undergoing a rewrite/cleanup and will be published so
     - Periodic status updates (job info + webcam capture)
     - Notify on print completion (and when job is ready for removal)
     - Notify on status changes
-
-## Web UI
-![image](https://github.com/user-attachments/assets/9c2efc93-c0e9-4857-a8e6-b2100f73a6d0)
-![image](https://github.com/user-attachments/assets/31e6a0f3-4210-4159-90ea-b340e88f95b5)
-![image](https://github.com/user-attachments/assets/4d6d61e1-0667-433e-955b-8fb4f02cb7a6)
-
-## WinForms UI
-![image](https://github.com/user-attachments/assets/9c22c61a-8971-4335-92e7-629e1ccb5484)
-![image](https://github.com/user-attachments/assets/8c1ef37f-f40f-4ee1-87e2-72284eeb344a)
-
-
-## Discord Notifications
-![image](https://github.com/user-attachments/assets/afab2969-9f28-4cc7-b79f-bccdc7821c81)
-![image](https://github.com/user-attachments/assets/e5e843e7-de36-403f-90dd-41fbd5641663)
-![image](https://github.com/user-attachments/assets/fbf36a49-5954-4e75-a658-0045290d924f)
-
-
+   
+# Compatibility
+- Full support for the 5M (Pro) [FW 2.7.8 - 3.1.3]
+- Support for any FlashForge printer with wifi capability is possible
