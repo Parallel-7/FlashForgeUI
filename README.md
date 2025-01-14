@@ -1,5 +1,10 @@
 # FlashForgeUI
 *WIP* Monitoring &amp; Control software for FlashForge printers, powered by [this](https://github.com/CopeTypes/ff-5mp-api) API
+
+![GitHub last commit](https://img.shields.io/github/last-commit/Parallel-7/FlashForgeUI)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Parallel-7/FlashForgeUI)
+![GitHub language count](https://img.shields.io/github/languages/count/Parallel-7/FlashForgeUI)
+
 ![image](https://github.com/user-attachments/assets/6c7298f7-7e8f-45d0-b92b-210a944407ca)
 ![image](https://github.com/user-attachments/assets/ab6d4007-a5ee-4344-a403-3a22f3fb3c21)
 ![image](https://github.com/user-attachments/assets/97f5e9b0-004c-41ff-99d9-86570c5572e4)
