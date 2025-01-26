@@ -40,3 +40,12 @@
 # Compatibility
 - Full support for the 5M (Pro) [FW 2.7.8 - 3.1.3]
 - Support for any FlashForge printer with wifi capability is possible
+
+
+<a href="https://star-history.com/#Parallel-7/FlashForgeUI&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Parallel-7/FlashForgeUI&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Parallel-7/FlashForgeUI&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Parallel-7/FlashForgeUI&type=Date" />
+ </picture>
+</a>
