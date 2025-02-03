@@ -108,8 +108,10 @@ namespace FlashForgeUI.ui.main.manager
 
         private void SetEtaAndJobControls(FiveMClient.MachineInfo machineInfo)
         {
+            // todo this needs to be refactored to use MachineState
             switch (machineInfo.Status)
             {
+                case "cancel":
                 case "completed":
                     SetJobComplete(machineInfo); // update UI
                     SetActiveJobControls(true); // show controls hidden during printing (will prompt to clear the bed first if not)

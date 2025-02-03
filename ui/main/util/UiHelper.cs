@@ -62,6 +62,7 @@
             _ui.uploadJobButton.Visible = true;
             _ui.sendCmdButton.Visible = true;
             _ui.swapFilamentButton.Visible = true;
+            _ui.clearPlatformButton.Visible = true;
             ShowTempControls();
         }
         
@@ -74,6 +75,7 @@
             _ui.uploadJobButton.Visible = false;
             _ui.sendCmdButton.Visible = false;
             _ui.swapFilamentButton.Visible = false;
+            _ui.clearPlatformButton.Visible = false;
             HideTempControls();
         }
         

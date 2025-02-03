@@ -338,7 +338,7 @@ namespace FlashForgeUI.ui.main
 
                 CheckFeatures();
                 
-                InitWebhook();
+                if (config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
                 await StartTimers();
                 if (config.WebUi) StartWebUi();
             }

@@ -12,6 +12,9 @@ namespace FlashForgeUI.program.util
         public bool DiscordSync { get; set; }
         public string WebhookUrl { get; set; }
 
+        public bool CustomCamera { get; set; }
+        public string CustomCameraUrl { get; set; }
+
 
         private const string FilePath = "config.json";
 
@@ -29,6 +32,8 @@ namespace FlashForgeUI.program.util
                 WebUi = false;
                 DiscordSync = false;
                 WebhookUrl = "";
+                CustomCamera = false;
+                CustomCameraUrl = "";
                 Save();
                 return this;
             }

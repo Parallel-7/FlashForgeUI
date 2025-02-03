@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AForge.Video;
@@ -17,7 +18,14 @@ namespace FlashForgeUI.ui.main.manager
         
         public void Start()
         {
-            _ui.mjpegStream = new MJPEGStream($"http://{_ui.printerClient.IpAddress}:8080/?action=stream");
+            if (_ui.config.CustomCamera) // check for custom camera url
+            {
+                // allow users to use placeholders for the IP
+                var url = _ui.config.CustomCameraUrl.Replace("{IpAddress}", _ui.printerClient.IpAddress);
+                _ui.mjpegStream = new MJPEGStream(url);
+                Console.WriteLine("Using custom camera url: " + url);
+            }
+            else _ui.mjpegStream = new MJPEGStream($"http://{_ui.printerClient.IpAddress}:8080/?action=stream"); // default for the 5M pro
             _ui.mjpegStream.NewFrame += MJPEGStream_NewFrame;
             _ui.mjpegStream.VideoSourceError += MJPEGStream_VideoSourceError;
             _ui.mjpegStream.Start();

@@ -33,8 +33,8 @@ namespace FlashForgeUI.manager
         public void TogglePreview()
         {
             if (_ui.printerClient == null) return;
-            if (!_ui.printerClient.IsPro)
-            { // make sure there's actually a webcam
+            if (!_ui.printerClient.IsPro && !_ui.config.CustomCamera) // check for webcam or custom setup
+            {
                 MessageBox.Show("No webcam!",
                     "The regular 5M has no built-in webcam. If you've installed one yourself, you can disable this check in settings");
                 return;
