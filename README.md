@@ -10,6 +10,11 @@
 ![image](https://github.com/user-attachments/assets/97f5e9b0-004c-41ff-99d9-86570c5572e4)
 ![image](https://github.com/user-attachments/assets/4970d19d-c640-46fe-b3b6-c673b811ed6a)
 
+## Setup
+- This require LAN-only mode enabled, which can be found from setting -> wifi -> network mode
+- After enabling, make note of the code at the bottom left, you'll use this during the initial paring process
+- This process only needs to be completed once, and you may toggle in and out of LAN-only mode without the code changing.
+- After initial pairing, FlashForgeUI will automatically find and connect to your printer when launched.
 
 ## Features
 -  Webcam preview / Job Name / Progress (%)
