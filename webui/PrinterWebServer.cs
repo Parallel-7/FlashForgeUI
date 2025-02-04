@@ -20,7 +20,7 @@ namespace FlashForgeUI.webui
         private readonly WebServerBridge _serverBridge;
         private readonly string _baseDirectory;
         private readonly string printerIp;
-        private bool isRunning = false;
+        public bool Running = false;
 
         public PrinterWebServer(MainMenu ui)
         {
@@ -49,14 +49,14 @@ namespace FlashForgeUI.webui
                     "Error", 
                     MessageBoxButtons.OK, 
                     MessageBoxIcon.Exclamation);
-                isRunning = false;
+                Running = false;
                 return;
             }
 
             // Get local IP addresses
             var localIpAddresses = string.Join(", ", GetLocalIpAddresses());
             _ui.AppendLog($"Web server started on IP(s): {localIpAddresses}, port 8080.");
-            isRunning = true;
+            Running = true;
 
             Task.Run(async () =>
             {
@@ -86,14 +86,14 @@ namespace FlashForgeUI.webui
 
         public void Stop()
         {
-            if (!isRunning) return;
+            if (!Running) return;
             Debug.WriteLine("Stopping web server");
             if (_httpListener == null || !_httpListener.IsListening) return;
             _httpListener.Stop();
             _httpListener.Close();
             Console.WriteLine("Web server stopped");
-            isRunning = false;
-            //form.AppendLog("Web server stopped.");
+            Running = false;
+            _ui.AppendLog("Web server stopped.");
         }
 
         private async Task ProcessWebRequest(HttpListenerContext context)

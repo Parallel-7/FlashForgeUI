@@ -33,6 +33,8 @@ namespace FlashForgeUI.ui.main
         {
             this.components = new System.ComponentModel.Container();
             this.mainWindow = new ReaLTaiizor.Forms.NightForm();
+            this.connectButton = new ReaLTaiizor.Controls.HopeButton();
+            this.settingsButton = new ReaLTaiizor.Controls.HopeButton();
             this.mainStatusLabel = new ReaLTaiizor.Controls.NightLabel();
             this.jobInfoLabel = new ReaLTaiizor.Controls.NightLabel();
             this.modelPreviewLabel = new ReaLTaiizor.Controls.NightLabel();
@@ -116,6 +118,8 @@ namespace FlashForgeUI.ui.main
             // mainWindow
             // 
             this.mainWindow.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(48)))), ((int)(((byte)(51)))));
+            this.mainWindow.Controls.Add(this.connectButton);
+            this.mainWindow.Controls.Add(this.settingsButton);
             this.mainWindow.Controls.Add(this.mainStatusLabel);
             this.mainWindow.Controls.Add(this.jobInfoLabel);
             this.mainWindow.Controls.Add(this.modelPreviewLabel);
@@ -138,6 +142,48 @@ namespace FlashForgeUI.ui.main
             this.mainWindow.Text = "FlashForge UI 1.0";
             this.mainWindow.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Left;
             this.mainWindow.TitleBarTextColor = System.Drawing.Color.Gainsboro;
+            // 
+            // connectButton
+            // 
+            this.connectButton.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(223)))), ((int)(((byte)(230)))));
+            this.connectButton.ButtonType = ReaLTaiizor.Util.HopeButtonType.Primary;
+            this.connectButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.connectButton.DangerColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(108)))), ((int)(((byte)(108)))));
+            this.connectButton.DefaultColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.connectButton.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.connectButton.HoverTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(49)))), ((int)(((byte)(51)))));
+            this.connectButton.InfoColor = System.Drawing.Color.FromArgb(((int)(((byte)(144)))), ((int)(((byte)(147)))), ((int)(((byte)(153)))));
+            this.connectButton.Location = new System.Drawing.Point(339, 5);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.PrimaryColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.connectButton.Size = new System.Drawing.Size(108, 23);
+            this.connectButton.SuccessColor = System.Drawing.Color.FromArgb(((int)(((byte)(103)))), ((int)(((byte)(194)))), ((int)(((byte)(58)))));
+            this.connectButton.TabIndex = 9;
+            this.connectButton.Text = "Connect";
+            this.connectButton.TextColor = System.Drawing.Color.White;
+            this.connectButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
+            // 
+            // settingsButton
+            // 
+            this.settingsButton.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(223)))), ((int)(((byte)(230)))));
+            this.settingsButton.ButtonType = ReaLTaiizor.Util.HopeButtonType.Primary;
+            this.settingsButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.settingsButton.DangerColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(108)))), ((int)(((byte)(108)))));
+            this.settingsButton.DefaultColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.settingsButton.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.settingsButton.HoverTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(49)))), ((int)(((byte)(51)))));
+            this.settingsButton.InfoColor = System.Drawing.Color.FromArgb(((int)(((byte)(144)))), ((int)(((byte)(147)))), ((int)(((byte)(153)))));
+            this.settingsButton.Location = new System.Drawing.Point(563, 5);
+            this.settingsButton.Name = "settingsButton";
+            this.settingsButton.PrimaryColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.settingsButton.Size = new System.Drawing.Size(108, 23);
+            this.settingsButton.SuccessColor = System.Drawing.Color.FromArgb(((int)(((byte)(103)))), ((int)(((byte)(194)))), ((int)(((byte)(58)))));
+            this.settingsButton.TabIndex = 8;
+            this.settingsButton.Text = "Settings";
+            this.settingsButton.TextColor = System.Drawing.Color.White;
+            this.settingsButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
+            this.settingsButton.Click += new System.EventHandler(this.settingsButton_Click);
             // 
             // mainStatusLabel
             // 
@@ -532,6 +578,7 @@ namespace FlashForgeUI.ui.main
             this.disableExtruderHeatButton.Text = "Off";
             this.disableExtruderHeatButton.TextColor = System.Drawing.Color.White;
             this.disableExtruderHeatButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
+            this.disableExtruderHeatButton.Click += new System.EventHandler(this.disableExtruderHeatButton_Click);
             // 
             // disableBedHeatButton
             // 
@@ -1179,6 +1226,10 @@ namespace FlashForgeUI.ui.main
             ((System.ComponentModel.ISupportInitialize)(this.webcamPictureBox)).EndInit();
             this.ResumeLayout(false);
         }
+
+        public ReaLTaiizor.Controls.HopeButton connectButton;
+
+        public ReaLTaiizor.Controls.HopeButton settingsButton;
 
         public ReaLTaiizor.Controls.HopeButton clearPlatformButton;
 

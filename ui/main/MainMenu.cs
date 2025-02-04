@@ -28,7 +28,7 @@ namespace FlashForgeUI.ui.main
 
         public FiveMClient printerClient;
 
-        private PrinterWebServer webServer;
+        internal PrinterWebServer webServer;
 
         internal WebhookHelper webhook;
 
@@ -46,7 +46,8 @@ namespace FlashForgeUI.ui.main
         { // for WebhookHelper (sending preview image to discord)
             return StreamManager;
         }
-        
+
+        internal bool isConnected = false;
         internal bool WebcamOn;
         
         public MainMenu()
@@ -315,7 +316,7 @@ namespace FlashForgeUI.ui.main
         
         
         
-        // Events (no idea if this will work)
+        // Events 
         
         internal async void MainMenu_Shown(object sender, EventArgs e)
         {
@@ -329,7 +330,12 @@ namespace FlashForgeUI.ui.main
             
             // load config
             config = new Config().Load();
-            
+
+            isConnected = await Connect();
+        }
+
+        internal async Task<bool> Connect()
+        {
             var connected = await _connectionManager.FindPrinterAndConnect();
             if (connected)
             {
@@ -341,12 +347,11 @@ namespace FlashForgeUI.ui.main
                 if (config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
                 await StartTimers();
                 if (config.WebUi) StartWebUi();
+
+                return true;
             }
-            else
-            {
-                // If not connected, close the application
-                Close();
-            }
+
+            return false;
         }
         
         internal void MainMenu_Closing(object sender, CancelEventArgs cancelEventArgs)
@@ -559,6 +564,16 @@ namespace FlashForgeUI.ui.main
         private async void clearPlatformButton_Click(object sender, EventArgs e)
         {
             await _buttonManager.ClearPlatform();
+        }
+
+        private void settingsButton_Click(object sender, EventArgs e)
+        {
+            _buttonManager.OpenSettings();
+        }
+
+        private async void connectButton_Click(object sender, EventArgs e)
+        {
+            isConnected = await Connect();
         }
     }
 }

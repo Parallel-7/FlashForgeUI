@@ -150,6 +150,12 @@
         <Compile Include="ui\window\SendCommandWindow.Designer.cs">
           <DependentUpon>SendCommandWindow.cs</DependentUpon>
         </Compile>
+        <Compile Include="ui\window\SettingsWindow.cs">
+          <SubType>Form</SubType>
+        </Compile>
+        <Compile Include="ui\window\SettingsWindow.Designer.cs">
+          <DependentUpon>SettingsWindow.cs</DependentUpon>
+        </Compile>
         <Compile Include="webui\PrinterWebServer.cs" />
         <Compile Include="webui\WebServerBridge.cs" />
         <EmbeddedResource Include="Properties\Resources.resx">
@@ -178,6 +184,9 @@
         </EmbeddedResource>
         <EmbeddedResource Include="ui\window\SendCommandWindow.resx">
           <DependentUpon>SendCommandWindow.cs</DependentUpon>
+        </EmbeddedResource>
+        <EmbeddedResource Include="ui\window\SettingsWindow.resx">
+          <DependentUpon>SettingsWindow.cs</DependentUpon>
         </EmbeddedResource>
         <None Include="packages.config" />
         <None Include="Properties\Settings.settings">

@@ -16,15 +16,30 @@ namespace FlashForgeUI.manager
             _ui = form1;
         }
 
+        private bool Check()
+        {
+            if (!_ui.isConnected)
+            {
+                MessageBox.Show("Connect to a printer first!", "Not connected");
+                return false;
+            }
+
+            return true;
+        }
+        
+        
+        
         // LEDs
         public async Task LedOn()
         {
+            if (!Check()) return;
             await _ui.printerClient.Control.SetLedOn();
             _ui.AppendLog("LED turned on.");
         }
 
         public async Task LedOff()
         {
+            if (!Check()) return;
             await _ui.printerClient.Control.SetLedOff();
             _ui.AppendLog("LED turned off.");
         }
@@ -32,6 +47,7 @@ namespace FlashForgeUI.manager
 
         public void TogglePreview()
         {
+            if (!Check()) return;
             if (_ui.printerClient == null) return;
             if (!_ui.printerClient.IsPro && !_ui.config.CustomCamera) // check for webcam or custom setup
             {
@@ -56,6 +72,7 @@ namespace FlashForgeUI.manager
         // Filtration
         public async Task FilteringOff()
         {
+            if (!Check()) return;
             // todo this needs to be coded into the webUI, this is a lazy fix for now since it will invoke this (indirectly) anyways
             if (!_ui.printerClient.IsPro)
             {
@@ -68,6 +85,7 @@ namespace FlashForgeUI.manager
         
         public async Task ExternalFilterOn()
         {
+            if (!Check()) return;
             // todo same for here
             if (!_ui.printerClient.IsPro)
             {
@@ -83,6 +101,7 @@ namespace FlashForgeUI.manager
 
         public async Task InternalFilterOn()
         {
+            if (!Check()) return;
             // todo also same for here
             if (!_ui.printerClient.IsPro)
             {
@@ -99,6 +118,7 @@ namespace FlashForgeUI.manager
         // Fans
         public async Task SetCoolingFanSpeed()
         {
+            if (!Check()) return;
             var input = Interaction.InputBox("Fan speed (0-100)", "Set Cooling Fan Speed", "0");
             if (int.TryParse(input, out var speed)) await _ui.printerClient.Control.SetCoolingFanSpeed(speed);
             else _ui.AppendLog("Setting cooling fan speed cancelled.");
@@ -106,6 +126,7 @@ namespace FlashForgeUI.manager
         
         public async Task SetChamberFanSpeed()
         {
+            if (!Check()) return;
             // todo this also needs to be coded into the web ui
             if (!_ui.printerClient.IsPro)
             {
@@ -121,6 +142,7 @@ namespace FlashForgeUI.manager
 
         public async Task PauseJob()
         {
+            if (!Check()) return;
             await _ui.CmdWait();
             if (!await _ui.printerClient.Info.IsPrinting()) _ui.AppendLog("No job to pause...");
             else if (!await _ui.printerClient.JobControl.PausePrintJob()) _ui.AppendLog("(Error) Unable to pause current job");
@@ -130,6 +152,7 @@ namespace FlashForgeUI.manager
 
         public async Task ResumeJob()
         {
+            if (!Check()) return;
             await _ui.CmdWait();
             // need to see what "state" is when paused, could be exactly that lol
             if (!await _ui.printerClient.JobControl.ResumePrintJob()) _ui.AppendLog("(Error) Unable to resume current job");
@@ -139,6 +162,7 @@ namespace FlashForgeUI.manager
 
         public async Task StopJob()
         {
+            if (!Check()) return;
             await _ui.CmdWait();
             if (!await _ui.printerClient.Info.IsPrinting()) _ui.AppendLog("No job to stop...");
             else if (!await _ui.printerClient.JobControl.CancelPrintJob()) _ui.AppendLog("(Error) Unable to cancel current job");
@@ -148,6 +172,7 @@ namespace FlashForgeUI.manager
 
         public async Task ClearPlatform()
         {
+            if (!Check()) return;
             if (!Compat.Is313OrAbove(_ui.printerClient.FirmVer)) return; // not supported below fw 3.13.3
             await _ui.CmdWait();
             var state = await _ui.printerClient.Info.GetState();
@@ -166,6 +191,7 @@ namespace FlashForgeUI.manager
         // Upload (and start) job/start local/recent (last 10) jobs
         public async Task<bool> SelectAndUploadGCodeFile()
         {
+            if (!Check()) return false;
             using (var form = new GCodeFilePicker())
             {
                 // todo this needs to be tested (the ReaLTaiizor refactor)
@@ -187,6 +213,7 @@ namespace FlashForgeUI.manager
         
         public async Task SelectRecentJob()
         {
+            if (!Check()) return;
             var localFileList = new GCodeListWindow(_ui.printerClient); // get recent (last 10 files) list
             var result = localFileList.ShowDialog();
             localFileList.Dispose();
@@ -196,6 +223,7 @@ namespace FlashForgeUI.manager
 
         public async Task SelectLocalJob()
         {
+            if (!Check()) return;
             var localFileList = new GCodeListWindow(_ui.printerClient, true); // get full list
             var result = localFileList.ShowDialog();
             localFileList.Dispose();
@@ -205,6 +233,7 @@ namespace FlashForgeUI.manager
         
         private async Task StartLocalJob(GCodeListWindow localFileListWindow)
         { // get selected file from list and start the print
+            if (!Check()) return;
             if (await _ui.printerClient.JobControl.PrintLocalFile(localFileListWindow.SelectedFileName,
                     localFileListWindow.AutoLevel))
             {
@@ -212,6 +241,14 @@ namespace FlashForgeUI.manager
             }
             else _ui.AppendLog($"Error starting recent job {localFileListWindow.SelectedFileName}");
         }
-        
+
+        public void OpenSettings()
+        {
+            //if (!Check()) return;
+            using (var form = new SettingsWindow(_ui))
+            {
+                form.ShowDialog();
+            }
+        }
     }
 }
