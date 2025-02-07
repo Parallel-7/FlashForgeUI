@@ -21,8 +21,6 @@ namespace FlashForgeUI
                 {
                     e.Cancel = true;
                     DialogResult = DialogResult.Cancel;
-                    if (_ui.config.WebUi && !_ui.webServer.Running) _ui.webServer.Start();
-                    else if (!ui.config.WebUi && ui.webServer.Running) _ui.webServer.Stop();
                     Close();
                 }
             };
@@ -52,6 +50,12 @@ namespace FlashForgeUI
 
             // webUI toggle
             webUICheck.Checked = _ui.config.WebUi;
+            
+            // debug mode toggle
+            debugCheck.Checked = _ui.config.DebugMode;
+            
+            // always on top toggle
+            alwaysOnTopCheck.Checked = _ui.config.AlwaysOnTop;
         }
 
         private void webUICheck_CheckedChanged(object sender, EventArgs e)
@@ -93,6 +97,18 @@ namespace FlashForgeUI
                 Save();
             }
             else _ui.config.DiscordSync = false;
+            Save();
+        }
+
+        private void debugCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.config.DebugMode = debugCheck.Checked;
+            Save();
+        }
+
+        private void alwaysOnTopCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.config.AlwaysOnTop = alwaysOnTopCheck.Checked;
             Save();
         }
     }

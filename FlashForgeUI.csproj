@@ -34,18 +34,6 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
-          <HintPath>packages\AForge.2.2.5\lib\AForge.dll</HintPath>
-        </Reference>
-        <Reference Include="AForge.Imaging, Version=2.2.5.0, Culture=neutral, PublicKeyToken=ba8ddea9676ca48b, processorArchitecture=MSIL">
-          <HintPath>packages\AForge.Imaging.2.2.5\lib\AForge.Imaging.dll</HintPath>
-        </Reference>
-        <Reference Include="AForge.Math, Version=2.2.5.0, Culture=neutral, PublicKeyToken=abba2e25397ee8c9, processorArchitecture=MSIL">
-          <HintPath>packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
-        </Reference>
-        <Reference Include="AForge.Video, Version=2.2.5.0, Culture=neutral, PublicKeyToken=cbfb6e07d173c401, processorArchitecture=MSIL">
-          <HintPath>packages\AForge.Video.2.2.5\lib\AForge.Video.dll</HintPath>
-        </Reference>
         <Reference Include="Costura, Version=6.0.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
           <HintPath>packages\Costura.Fody.6.0.0\lib\netstandard2.0\Costura.dll</HintPath>
         </Reference>
@@ -115,10 +103,11 @@
           <DependentUpon>MainMenu.cs</DependentUpon>
         </Compile>
         <Compile Include="ui\main\manager\ButtonManager.cs" />
+        <Compile Include="ui\main\manager\CameraStreamManager.cs" />
         <Compile Include="ui\main\manager\ConnectionManager.cs" />
-        <Compile Include="ui\main\manager\MjpegStreamManager.cs" />
         <Compile Include="ui\main\manager\StatusTimerManager.cs" />
         <Compile Include="ui\main\util\Compat.cs" />
+        <Compile Include="ui\main\util\MjpegClient.cs" />
         <Compile Include="ui\main\util\UiHelper.cs" />
         <Compile Include="ui\window\PrinterPairingWindow.cs">
           <SubType>Form</SubType>
@@ -158,6 +147,7 @@
         </Compile>
         <Compile Include="webui\PrinterWebServer.cs" />
         <Compile Include="webui\WebServerBridge.cs" />
+        <Compile Include="webui\WebSocketHandler.cs" />
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>

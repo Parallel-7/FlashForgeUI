@@ -10,27 +10,21 @@
         currentListType = listType;
         selectedFile = null;
         modal.removeAttribute('data-selected-file');
-        document.body.classList.add('modal-active'); // show the modal
-        //console.log('Modal shown with listType:', listType);
-        try {
-            const response = await fetch(`/files?listType=${encodeURIComponent(listType)}`);
-            if (!response.ok) { throw new Error(`Bad response: ${response.status}`); }
-            const files = await response.json();
-            displayFileSelection(files, listType);
-        } catch (error) {
-            fileList.innerHTML = '<p>Error loading files.</p>';
-            //return 'Error fetching file list: ' + error;
-        }
+        document.body.classList.add('modal-active');
+
+        sendWebSocketMessage({
+            type: 'getFiles',
+            parameters: { listType }
+        });
     }
 }
 
-// Display File Selection in Modal
 function displayFileSelection(files, listType) {
     console.log('displayFileSelection called with listType:', listType, 'and files:', files);
     const fileList = document.getElementById('fileList');
 
     if (fileList) {
-        fileList.innerHTML = ''; // clear old items
+        fileList.innerHTML = '';
 
         if (files.length === 0) {
             const noFilesMsg = document.createElement('p');
@@ -39,18 +33,24 @@ function displayFileSelection(files, listType) {
             return;
         }
 
-        files.forEach(file => { // loop through files
+        files.forEach(file => {
             const fileItem = document.createElement('div');
             fileItem.classList.add('file-item');
-            fileItem.onclick = function() { selectFile(fileItem, file);}; // handle selecting a file
+            fileItem.onclick = function() { selectFile(fileItem, file); };
 
-            const thumbnail = document.createElement('img'); // load preview
-            thumbnail.src = '/thumbnails/' + encodeURIComponent(file);
+            // Request thumbnail via WebSocket
+            sendWebSocketMessage({
+                type: 'getThumbnail',
+                parameters: { filename: file }
+            });
+
+            const thumbnail = document.createElement('img');
+            thumbnail.id = `thumb-${file}`;
             thumbnail.alt = file;
-            thumbnail.onerror = () => { thumbnail.src = ''; }; // missing preview
+            thumbnail.onerror = () => { thumbnail.src = ''; };
             fileItem.appendChild(thumbnail);
 
-            const fileName = document.createElement('p'); // add to list
+            const fileName = document.createElement('p');
             fileName.textContent = file;
             fileItem.appendChild(fileName);
             fileList.appendChild(fileItem);
@@ -61,15 +61,14 @@ function displayFileSelection(files, listType) {
 }
 
 function selectFile(element, file) {
-    //console.log('File selected:', file);
     const modal = document.getElementById('fileSelectionModal');
     const allFileItems = document.querySelectorAll('.file-item');
     allFileItems.forEach(item => item.classList.remove('selected'));
     element.classList.add('selected');
     selectedFile = file;
     modal.setAttribute('data-selected-file', file);
-    
-    const startPrintBtn = document.querySelector('.modal-content button[onclick="startPrintJob()"]'); // "unlock" start button
+
+    const startPrintBtn = document.querySelector('.modal-content button[onclick="startPrintJob()"]');
     if (startPrintBtn) {
         startPrintBtn.disabled = false;
     }
@@ -83,34 +82,20 @@ function closeFileList() {
         modal.removeAttribute('data-selected-file');
         selectedFile = null;
         currentListType = null;
-        //const fileList = document.getElementById('fileList');
-        //if (fileList) {
-        //    fileList.innerHTML = '';
-        //}
-        //console.log('Modal closed');
     }
 }
 
 async function startPrintJob() {
-    //console.log('startPrintJob called');
     if (!selectedFile) {
         alert('No file selected!');
-        return "No file selected";
+        return;
     }
 
     const autoLevel = document.getElementById('autoLevelCheckbox').checked;
-    let command = '';
+    await sendCommand('startLocalJob', {
+        filename: selectedFile,
+        autoLevel: autoLevel
+    });
 
-    if (currentListType === 'local') {
-        command = 'startLocalJob';
-    } else if (currentListType === 'recent') {
-        command = 'startRecentJob';
-    } else {
-        return('Unknown list type: ' + currentListType);
-    }
-
-    const params = `?filename=${encodeURIComponent(selectedFile)}&autoLevel=${autoLevel}`;
-    await sendCommand(command, params);
     closeFileList();
-    return "ok"
 }

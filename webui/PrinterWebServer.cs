@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using FlashForgeUI.program.util;
 using Newtonsoft.Json;
 using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
@@ -18,147 +19,203 @@ namespace FlashForgeUI.webui
         private HttpListener _httpListener;
         private readonly MainMenu _ui;
         private readonly WebServerBridge _serverBridge;
+        private readonly WebSocketHandler _webSocketHandler;
         private readonly string _baseDirectory;
-        private readonly string printerIp;
+        private readonly string _printerIp;
+        //private readonly Config _config;
         public bool Running = false;
 
-        public PrinterWebServer(MainMenu ui)
+        public PrinterWebServer(MainMenu ui, Config config)
         {
             _ui = ui;
+            //_config = config;
             _serverBridge = new WebServerBridge(ui.printerClient);
+            _webSocketHandler = new WebSocketHandler(ui, _serverBridge, config);
             _baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "webui//wwwroot");
-            printerIp = ui.printerClient.IpAddress;
+            _printerIp = ui.printerClient.IpAddress;
 
             Debug.WriteLine($"PrinterWebServer initialized with base directory: {_baseDirectory}");
-            Debug.WriteLine($"Printer IP Address: {printerIp}");
+            Debug.WriteLine($"Printer IP Address: {_printerIp}");
         }
 
         public void Start()
         {
-            Debug.WriteLine("Starting web server");
             try
             {
                 _httpListener = new HttpListener();
-                _httpListener.Prefixes.Add("http://*:8080/"); // Listen on all network interfaces, port 8080
+                _httpListener.Prefixes.Add("http://*:8080/");
                 _httpListener.Start();
+
+                var localIpAddresses = string.Join(", ", GetLocalIpAddresses());
+                _ui.AppendLog($"Web server started on IP(s): {localIpAddresses}, port 8080");
+                Running = true;
+
+                // Start WebSocket status updates
+                _webSocketHandler.StartStatusUpdates();
+
+                // Start listening for connections in the background
+                Task.Run(async () =>
+                {
+                    while (_httpListener.IsListening)
+                    {
+                        try
+                        {
+                            // Get the next request
+                            var context = await _httpListener.GetContextAsync();
+
+                            // Handle the request in a new task so we can immediately continue listening
+                            _ = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (context.Request.IsWebSocketRequest && context.Request.Url.AbsolutePath == "/ws")
+                                        await HandleWebSocketRequest(context);
+                                    else await HandleHttpRequest(context);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine($"Error handling request: {ex.Message}");
+                                    Debug.WriteLine(ex.StackTrace);
+                                    try
+                                    {
+                                        context.Response.StatusCode = 500;
+                                        context.Response.Close();
+                                    }
+                                    catch
+                                    {
+                                        /* ignore cleanup errors */
+                                    }
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error accepting request: {ex.Message}");
+                            Debug.WriteLine(ex.StackTrace);
+                        }
+                    }
+                });
             }
             catch (Exception e)
             {
-                Debug.Write("Unable to start web server, probably not executed as admin:\n" + e.StackTrace);
-                MessageBox.Show("Unable to start web server (for web UI), did you run as administrator?", 
-                    "Error", 
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Exclamation);
+                Debug.WriteLine($"Unable to start web server: {e.Message}");
+                MessageBox.Show("Unable to start web server (for web UI), did you run as administrator?",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 Running = false;
-                return;
             }
+        }
 
-            // Get local IP addresses
-            var localIpAddresses = string.Join(", ", GetLocalIpAddresses());
-            _ui.AppendLog($"Web server started on IP(s): {localIpAddresses}, port 8080.");
-            Running = true;
-
-            Task.Run(async () =>
+        private async Task HandleWebSocketRequest(HttpListenerContext context)
+        {
+            try
             {
-                while (_httpListener.IsListening)
-                {
-                    try
-                    {
-                        var context = await _httpListener.GetContextAsync();
-                        await ProcessWebRequest(context);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error processing request: " + ex.Message);
-                    }
-                }
-            });
-        }
-
-        private static IEnumerable<string> GetLocalIpAddresses()
-        {
-            return Dns.GetHostEntry(Dns.GetHostName())
-                .AddressList
-                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
-                .Where(ip => ip.ToString().Contains("192.168"))
-                .Select(ip => ip.ToString());
-        }
-
-        public void Stop()
-        {
-            if (!Running) return;
-            Debug.WriteLine("Stopping web server");
-            if (_httpListener == null || !_httpListener.IsListening) return;
-            _httpListener.Stop();
-            _httpListener.Close();
-            Console.WriteLine("Web server stopped");
-            Running = false;
-            _ui.AppendLog("Web server stopped.");
-        }
-
-        private async Task ProcessWebRequest(HttpListenerContext context)
-        {
-            var response = context.Response;
-            var request = context.Request;
-
-            if (request.RawUrl.StartsWith("/status")) ServeStatusJson(response);
-            else if (request.RawUrl.StartsWith("/files")) await ServeGCodeFileList(request, response);
-            else if (request.RawUrl.StartsWith("/thumbnails/")) await ServeThumbnail(request, response);
-            else if (request.RawUrl.StartsWith("/command")) await ProcessCommand(context);
-            else await ServeStaticFile(request, response);
-            // no need for anything else, web ui will never request anything out of parameters
-        }
-
-        private async Task ServeStaticFile(HttpListenerRequest request, HttpListenerResponse response)
-        {
-            var urlPath = request.Url.AbsolutePath;
-            
-            if (urlPath == "/") urlPath = "/index.html"; // default to index.html
-            
-            var safePath = Path.GetFullPath(Path.Combine(_baseDirectory, // Prevent directory traversal attacks
-                urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
-            
-            if (File.Exists(safePath))
-            {
+                WebSocketContext webSocketContext = null;
                 try
                 {
-                    if (Path.GetFileName(safePath).Equals("index.html", StringComparison.OrdinalIgnoreCase))
-                    { 
-                        var htmlContent = File.ReadAllText(safePath, Encoding.UTF8);
-                        Debug.WriteLine($"Original HTML Content Length: {htmlContent.Length}");
-                        htmlContent = htmlContent.Replace("REPLACE_PRINTER_IP", printerIp);
-                        Debug.WriteLine($"Modified HTML Content Length: {htmlContent.Length}");
+                    webSocketContext = await context.AcceptWebSocketAsync(subProtocol: null);
+                    Debug.WriteLine("WebSocket connection accepted");
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"WebSocket upgrade failed: {e.Message}");
+                    context.Response.StatusCode = 500;
+                    context.Response.Close();
+                    return;
+                }
 
-                        var buffer = Encoding.UTF8.GetBytes(htmlContent);
+                using (var ws = webSocketContext.WebSocket)
+                {
+                    await _webSocketHandler.HandleWebSocketConnection(ws);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling WebSocket request: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                context.Response.StatusCode = 500;
+                context.Response.Close();
+            }
+        }
+
+        private async Task HandleHttpRequest(HttpListenerContext context)
+        {
+            try
+            {
+                if (context.Request.IsWebSocketRequest)
+                {
+                    if (context.Request.Url.AbsolutePath == "/ws")
+                    {
+                        await HandleWebSocketRequest(context);
+                        return;
+                    }
+
+                    context.Response.StatusCode = 400;
+                    context.Response.Close();
+                    return;
+                }
+
+                var request = context.Request;
+                var response = context.Response;
+
+                try
+                {
+                    string path = request.Url.AbsolutePath;
+
+                    // Serve index.html for root path
+                    if (path == "/" || string.IsNullOrEmpty(path)) path = "/index.html";
+
+                    // Convert path to use correct directory separators and remove any leading separator
+                    var normalizedPath = path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                    var fullPath = Path.GetFullPath(Path.Combine(_baseDirectory, normalizedPath));
+
+                    Debug.WriteLine($"Requested path: {path}");
+                    Debug.WriteLine($"Full path: {fullPath}");
+                    Debug.WriteLine($"Base directory: {_baseDirectory}");
+
+                    if (!File.Exists(fullPath))
+                    {
+                        Debug.WriteLine($"File not found: {fullPath}");
+                        response.StatusCode = 404;
+                        response.Close();
+                        return;
+                    }
+
+                    // Serve html (and replace printer webcam ip placeholder - custom camera will be loaded from config)
+                    if (Path.GetFileName(fullPath).Equals("index.html", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var content = File.ReadAllText(fullPath);
+                        if (_ui.config.CustomCamera)
+                        {
+                            var url = _ui.config.CustomCameraUrl.Replace("{IpAddress}", _ui.printerClient.IpAddress);
+                            content = content.Replace("STREAM_URL_PLACEHOLDER", url);
+                        } else content = content.Replace("STREAM_URL_PLACEHOLDER", $"http://{_ui.printerClient.IpAddress}:8080/?action=stream");
+                        var buffer = Encoding.UTF8.GetBytes(content);
                         response.ContentType = "text/html";
                         response.ContentLength64 = buffer.Length;
                         await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-                        Debug.WriteLine("Served modified index.html");
                     }
                     else
                     {
-                        var fileBytes = File.ReadAllBytes(safePath);
-                        response.ContentType = GetContentType(Path.GetExtension(safePath));
-                        response.ContentLength64 = fileBytes.Length;
-                        await response.OutputStream.WriteAsync(fileBytes, 0, fileBytes.Length);
-                        Debug.WriteLine($"Served static file: {Path.GetFileName(safePath)}");
+                        // Serve all other static files
+                        var content = File.ReadAllBytes(fullPath);
+                        response.ContentType = GetContentType(Path.GetExtension(fullPath));
+                        response.ContentLength64 = content.Length;
+                        await response.OutputStream.WriteAsync(content, 0, content.Length);
                     }
-
-                    response.OutputStream.Close();
                 }
-                catch (Exception ex)
+                finally
                 {
-                    Console.WriteLine("Error serving static file: " + ex.Message);
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     response.Close();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // 404
-                Debug.WriteLine($"File not found: {safePath}");
-                response.StatusCode = (int) HttpStatusCode.NotFound;
-                response.Close();
+                Debug.WriteLine($"Error handling HTTP request: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                context.Response.StatusCode = 500;
+                context.Response.Close();
             }
         }
 
@@ -170,193 +227,48 @@ namespace FlashForgeUI.webui
                 case ".css": return "text/css";
                 case ".js": return "application/javascript";
                 case ".png": return "image/png";
-                case ".jpg": case ".jpeg": return "image/jpeg";
+                case ".jpg":
+                case ".jpeg": return "image/jpeg";
                 case ".gif": return "image/gif";
                 case ".svg": return "image/svg+xml";
+                case ".ico": return "image/x-icon";
                 case ".json": return "application/json";
                 default: return "application/octet-stream";
             }
         }
 
-        private void ServeStatusJson(HttpListenerResponse response)
+        private static IEnumerable<string> GetLocalIpAddresses()
         {
-            var status = _ui.GetPrinterStatus();
-            var jsonResponse = JsonConvert.SerializeObject(status);
-            var buffer = Encoding.UTF8.GetBytes(jsonResponse);
-            response.ContentType = "application/json";
-            response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
+            return Dns.GetHostEntry(Dns.GetHostName())
+                .AddressList
+                .Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                .Where(ip => ip.ToString().Contains("192.168"))
+                .Select(ip => ip.ToString());
         }
 
-        private async Task ServeGCodeFileList(HttpListenerRequest request, HttpListenerResponse response)
+        public void Stop()
         {
-            var queryParams = request.QueryString;
-            var listType = queryParams["listType"] ?? "recent"; // default to 'recent' if not specified
+            if (!Running) return;
 
-            List<string> files;
-            if (listType == "local") files = await _serverBridge.GetGCodeFileList("local");
-            else files = await _serverBridge.GetGCodeFileList("recent");
-
-            // Convert the list to JSON
-            var jsonResponse = JsonConvert.SerializeObject(files);
-            var buffer = Encoding.UTF8.GetBytes(jsonResponse);
-            response.ContentType = "application/json";
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-
-        private async Task ServeThumbnail(HttpListenerRequest request, HttpListenerResponse response)
-        {
-            var filename = Uri.UnescapeDataString(request.Url.AbsolutePath.Replace("/thumbnails/", ""));
-            var thumbnailData = await _serverBridge.GetGCodeThumbnail(filename);
-
-            if (thumbnailData != null)
+            try
             {
-                response.ContentType = "image/png";
-                response.ContentLength64 = thumbnailData.Length;
-                await response.OutputStream.WriteAsync(thumbnailData, 0, thumbnailData.Length);
-                response.OutputStream.Close();
+                _webSocketHandler.StopStatusUpdates();
+
+                if (_httpListener?.IsListening == true)
+                {
+                    _httpListener.Stop();
+                    _httpListener.Close();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                response.StatusCode = 404;
-                response.Close();
+                Debug.WriteLine($"Error stopping web server: {ex.Message}");
             }
-        }
-
-        private async Task ProcessCommand(HttpListenerContext context)
-        {
-            var request = context.Request;
-            var command = request.Url.AbsolutePath.Replace("/command/", "");
-            var response = context.Response;
-            var queryParams = request.QueryString; // read params
-            string result;
-
-            switch (command)
+            finally
             {
-                case "pauseJob":
-                    result = await _serverBridge.PauseJob();
-                    break;
-                case "resumeJob":
-                    result = await _serverBridge.ResumeJob();
-                    break;
-                case "stopJob":
-                    result = await _serverBridge.StopJob();
-                    break;
-                case "uploadJob":
-                    //todo impl
-                    result = "Upload job not implemented.";
-                    break;
-                case "homeAxes":
-                    result = await _serverBridge.HomeAxes();
-                    break;
-                case "setCoolingFanSpeed":
-                    result = await HandleSetCoolingFanSpeed(queryParams);
-                    break;
-                case "setChamberFanSpeed":
-                    result = await HandleSetChamberFanSpeed(queryParams);
-                    break;
-                case "setBedTemp":
-                    result = await HandleSetBedTemp(queryParams);
-                    break;
-                case "setExtruderTemp":
-                    result = await HandleSetExtruderTemp(queryParams);
-                    break;
-                case "setZAxisOffset":
-                    result = await HandleSetZAxisOffset(queryParams);
-                    break;
-                case "turnLedOn":
-                    result = await _serverBridge.SetLedOn();
-                    break;
-                case "turnLedOff":
-                    result = await _serverBridge.SetLedOff();
-                    break;
-                case "cancelBedHeating":
-                    result = await _serverBridge.CancelBedHeating();
-                    break;
-                case "cancelExtruderHeating":
-                    result = await _serverBridge.CancelExtruderHeating();
-                    break;
-                case "setExternalFiltrationOn":
-                    result = await _serverBridge.SetExternalFiltrationOn();
-                    break;
-                case "setInternalFiltrationOn":
-                    result = await _serverBridge.SetInternalFiltrationOn();
-                    break;
-                case "setFiltrationOff":
-                    result = await _serverBridge.SetFiltrationOff();
-                    break;
-                case "startLocalJob":
-                    result = await HandleStartLocalJob(request);
-                    break;
-                default:
-                    result = "Unknown command.";
-                    break;
+                Running = false;
+                _ui.AppendLog("Web server stopped.");
             }
-
-            // Send response
-            var buffer = Encoding.UTF8.GetBytes(result);
-            response.ContentType = "text/plain";
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-
-        // Helper methods for handling commands with parameters
-        private async Task<string> HandleSetCoolingFanSpeed(
-            System.Collections.Specialized.NameValueCollection queryParams)
-        {
-            if (!await _serverBridge.IsPrinting()) return "Not available unless printing.";
-            var speedParam = queryParams["speed"];
-            if (int.TryParse(speedParam, out var speed)) return await _serverBridge.SetCoolingFanSpeed(speed);
-            return "Invalid cooling fan speed.";
-        }
-
-        private async Task<string> HandleSetChamberFanSpeed(
-            System.Collections.Specialized.NameValueCollection queryParams)
-        {
-            if (!await _serverBridge.IsPrinting()) return "Not available unless printing.";
-            var speedParam = queryParams["speed"];
-            if (int.TryParse(speedParam, out var speed)) return await _serverBridge.SetChamberFanSpeed(speed);
-            return "Invalid chamber fan speed.";
-        }
-
-        private async Task<string> HandleSetBedTemp(System.Collections.Specialized.NameValueCollection queryParams)
-        {
-            if (await _serverBridge.IsPrinting()) return "Not available while printing.";
-            var tempParam = queryParams["temp"];
-            if (int.TryParse(tempParam, out var temp)) return await _serverBridge.SetBedTemperature(temp);
-            return "Invalid bed temperature.";
-        }
-
-        private async Task<string> HandleSetExtruderTemp(System.Collections.Specialized.NameValueCollection queryParams)
-        {
-            if (!await _serverBridge.IsPrinting()) return "Not available while printing.";
-            var tempParam = queryParams["temp"];
-            if (int.TryParse(tempParam, out var temp)) return await _serverBridge.SetExtruderTemperature(temp);
-            return "Invalid extruder temperature.";
-        }
-
-        private async Task<string> HandleSetZAxisOffset(System.Collections.Specialized.NameValueCollection queryParams)
-        {
-            if (!await _serverBridge.IsPrinting()) return "Not available unless printing.";
-            var offsetParam = queryParams["offset"];
-            if (float.TryParse(offsetParam, out var offset)) return await _serverBridge.SetZAxisOffset(offset);
-            return "Invalid Z-axis offset.";
-        }
-
-        private async Task<string> HandleStartLocalJob(HttpListenerRequest request)
-        {
-            if (!await _serverBridge.IsReady()) return "Printer is busy."; // make sure the printer is ready
-            var queryParams = request.QueryString;
-            var filename = queryParams["filename"];
-            var autoLevelParam = queryParams["autoLevel"];
-            var autoLevel = bool.TryParse(autoLevelParam, out var tempAutoLevel) && tempAutoLevel;
-            if (string.IsNullOrEmpty(filename)) return "No file specified.";
-            var result = await _serverBridge.StartLocalJob(filename, autoLevel);
-            return result;
         }
     }
 }

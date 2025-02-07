@@ -11,7 +11,7 @@ namespace FlashForgeUI
     static class Program
     {
         [DllImport("kernel32.dll")]
-        private static extern bool AllocConsole();
+        public static extern bool AllocConsole();
         
         /// <summary>
         /// The main entry point for the application.
@@ -19,7 +19,7 @@ namespace FlashForgeUI
         [STAThread]
         static void Main()
         {
-            AllocConsole();
+            //AllocConsole();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false); 
             Application.Run(new ui.main.MainMenu());

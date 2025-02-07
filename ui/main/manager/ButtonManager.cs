@@ -18,7 +18,7 @@ namespace FlashForgeUI.manager
 
         private bool Check()
         {
-            if (!_ui.isConnected)
+            if (!_ui.IsConnected)
             {
                 MessageBox.Show("Connect to a printer first!", "Not connected");
                 return false;
@@ -55,19 +55,27 @@ namespace FlashForgeUI.manager
                     "The regular 5M has no built-in webcam. If you've installed one yourself, you can disable this check in settings");
                 return;
             }
-            if (!_ui.WebcamOn)
+            if (!_ui.WebcamOn) PreviewOn();
+            else PreviewOff();
+        }
+
+        public void PreviewOn()
+        {
+            if (_ui.StreamManager.Start())
             {
-                _ui.StreamManager.Start();
                 _ui.toggleWebcamButton.Text = "Preview Off";
                 _ui.WebcamOn = true;
             }
-            else
-            {
-                _ui.StreamManager.Stop();
-                _ui.toggleWebcamButton.Text = "Preview On";
-                _ui.WebcamOn = false;
-            }
         }
+
+        public void PreviewOff()
+        {
+            _ui.StreamManager.Stop();
+            _ui.toggleWebcamButton.Text = "Preview On";
+            _ui.WebcamOn = false;
+        }
+        
+        
 
         // Filtration
         public async Task FilteringOff()

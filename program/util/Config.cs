@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
@@ -10,6 +11,16 @@ namespace FlashForgeUI.program.util
 
         public bool WebUi { get; set; }
         public bool DiscordSync { get; set; }
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(false)]
+        public bool AlwaysOnTop { get; set; }
+        
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(false)]
+        public bool DebugMode { get; set; }
+        
         public string WebhookUrl { get; set; }
 
         public bool CustomCamera { get; set; }
@@ -31,6 +42,8 @@ namespace FlashForgeUI.program.util
                 Debug.WriteLine("config.json not found, creating & loading default settings.");
                 WebUi = false;
                 DiscordSync = false;
+                AlwaysOnTop = false;
+                DebugMode = false;
                 WebhookUrl = "";
                 CustomCamera = false;
                 CustomCameraUrl = "";

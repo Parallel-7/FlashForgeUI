@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using AForge.Video;
+
 using FiveMApi.api;
 using FlashForgeUI.manager;
 using FlashForgeUI.program.util;
@@ -24,7 +24,7 @@ namespace FlashForgeUI.ui.main
         // and theme accordingly if we cannot get the scroll to bottom to work
         // it does look nicer though.
         
-        internal MJPEGStream mjpegStream;
+        //internal MJPEGStream mjpegStream;
 
         public FiveMClient printerClient;
 
@@ -37,17 +37,19 @@ namespace FlashForgeUI.ui.main
         
         // Managers
         private ConnectionManager _connectionManager;
-        internal MjpegStreamManager StreamManager;
+        internal CameraStreamManager StreamManager;
         private StatusTimerManager _statusTimerManager;
-        private ButtonManager _buttonManager;
+        internal ButtonManager ButtonManager;
+
+        private UiHelper _uiHelper;
         
         
-        public MjpegStreamManager GetMjpegStreamManager()
+        public CameraStreamManager GetCameraStreamManager()
         { // for WebhookHelper (sending preview image to discord)
             return StreamManager;
         }
 
-        internal bool isConnected = false;
+        internal bool IsConnected;
         internal bool WebcamOn;
         
         public MainMenu()
@@ -56,7 +58,8 @@ namespace FlashForgeUI.ui.main
             
             // hook form events
             Shown += MainMenu_Shown;
-            Closing += MainMenu_Closing;
+            //Closing += MainMenu_Closing;
+            FormClosing += MainMenu_Closing;
             
             // hook timer events
             timerStatusUpdate.Tick += timerStatusUpdate_Tick;
@@ -75,15 +78,14 @@ namespace FlashForgeUI.ui.main
             webhook = new WebhookHelper(config.WebhookUrl, this);
         }
         
-        private async Task StartTimers()
+        private void StartTimers()
         {
             timerStatusUpdate_Tick(null, null); // 'kick start' before first timer elapses
             timerSyncInfo_Tick(null, null);
             timerStatusUpdate.Start();
             timerSyncInfo.Start();
             if (config.DiscordSync) timerSyncDiscord.Start();
-            // todo better way to check for webcam availability
-            if (await printerClient.Info.IsPrinting() && printerClient.IsPro) {
+            if (printerClient.IsPro || config.CustomCamera && !string.IsNullOrEmpty(config.CustomCameraUrl)) {
                 StreamManager.Start();
                 WebcamOn = true;
                 toggleWebcamButton.Text = "Preview off";
@@ -92,7 +94,7 @@ namespace FlashForgeUI.ui.main
 
         private void StartWebUi()
         {
-            webServer = new PrinterWebServer(this);
+            webServer = new PrinterWebServer(this, config);
             webServer.Start();
         }
 
@@ -320,18 +322,23 @@ namespace FlashForgeUI.ui.main
         
         internal async void MainMenu_Shown(object sender, EventArgs e)
         {
-            // init managers
-            // todo all of these have to be updated or refactored to use this
-            // they are expecting the old UI (Form1.cs)
-            _connectionManager = new ConnectionManager(this);
-            StreamManager = new MjpegStreamManager(this);
-            _statusTimerManager = new StatusTimerManager(this);
-            _buttonManager = new ButtonManager(this);
-            
             // load config
             config = new Config().Load();
+            
+            _uiHelper = new UiHelper(this);
+            if (config.AlwaysOnTop) _uiHelper.SetOnTop();
 
-            isConnected = await Connect();
+            // init managers
+            _connectionManager = new ConnectionManager(this);
+            StreamManager = new CameraStreamManager(this);
+            _statusTimerManager = new StatusTimerManager(this, _uiHelper);
+            ButtonManager = new ButtonManager(this);
+            
+            
+            // only show console window if in debug mode
+            if (config.DebugMode) Program.AllocConsole();
+
+            IsConnected = await Connect();
         }
 
         internal async Task<bool> Connect()
@@ -345,7 +352,7 @@ namespace FlashForgeUI.ui.main
                 CheckFeatures();
                 
                 if (config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
-                await StartTimers();
+                StartTimers();
                 if (config.WebUi) StartWebUi();
 
                 return true;
@@ -356,45 +363,32 @@ namespace FlashForgeUI.ui.main
         
         internal void MainMenu_Closing(object sender, CancelEventArgs cancelEventArgs)
         {
-            // shutdown Web UI
-            if (config.WebUi) webServer.Stop();
-            try
-            {
-                timerStatusUpdate.Stop(); // stop requesting status updates from printer
-                timerSyncInfo.Stop();
-                StreamManager.Stop(); // dispose of webcam stream
-                printerClient.Dispose(); // end TcpClient control, shutdown keep alive
-                printerClient = null;
-            }
-            catch
-            {
-                // not ideal but
-            }
+            Application.Exit();
         }
 
         private async void ledOnButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.LedOn();
+            await ButtonManager.LedOn();
         }
 
         private async void ledOffButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.LedOff();
+            await ButtonManager.LedOff();
         }
 
         private async void pauseJobButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.PauseJob();
+            await ButtonManager.PauseJob();
         }
 
         private async void resumeJobButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.ResumeJob();
+            await ButtonManager.ResumeJob();
         }
 
         private async void stopJobButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.StopJob();
+            await ButtonManager.StopJob();
         }
 
         private async void swapFilamentButton_Click(object sender, EventArgs e)
@@ -421,19 +415,19 @@ namespace FlashForgeUI.ui.main
         private async void uploadJobButton_Click(object sender, EventArgs e)
         {
             if (!await CheckJobReady()) return; // make sure the printer is ready for a new job
-            if (!await _buttonManager.SelectAndUploadGCodeFile()) AppendLog("Uploading new job cancelled.");
+            if (!await ButtonManager.SelectAndUploadGCodeFile()) AppendLog("Uploading new job cancelled.");
         }
 
         private async void startRecentJobButton_Click(object sender, EventArgs e)
         {
             if (!await CheckJobReady()) return;
-            await _buttonManager.SelectRecentJob();
+            await ButtonManager.SelectRecentJob();
         }
 
         private async void startLocalJobButton_Click(object sender, EventArgs e)
         {
             if (!await CheckJobReady()) return;
-            await _buttonManager.SelectLocalJob();
+            await ButtonManager.SelectLocalJob();
         }
 
         private void sendCmdButton_Click(object sender, EventArgs e)
@@ -443,7 +437,7 @@ namespace FlashForgeUI.ui.main
 
         private void toggleWebcamButton_Click(object sender, EventArgs e)
         {
-            _buttonManager.TogglePreview();
+            ButtonManager.TogglePreview();
         }
 
         private async void setBedTempButton_Click(object sender, EventArgs e)
@@ -528,27 +522,27 @@ namespace FlashForgeUI.ui.main
 
         private async void externalFiltrationButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.ExternalFilterOn();
+            await ButtonManager.ExternalFilterOn();
         }
 
         private async void internalFiltrationButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.InternalFilterOn();
+            await ButtonManager.InternalFilterOn();
         }
 
         private async void disableFiltrationButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.FilteringOff();
+            await ButtonManager.FilteringOff();
         }
 
         private async void setCoolingFanButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.SetCoolingFanSpeed();
+            await ButtonManager.SetCoolingFanSpeed();
         }
 
         private async void setChamberFanButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.SetChamberFanSpeed();
+            await ButtonManager.SetChamberFanSpeed();
         }
 
         private async void setSpeedOffsetButton_Click(object sender, EventArgs e)
@@ -563,17 +557,24 @@ namespace FlashForgeUI.ui.main
 
         private async void clearPlatformButton_Click(object sender, EventArgs e)
         {
-            await _buttonManager.ClearPlatform();
+            await ButtonManager.ClearPlatform();
         }
 
         private void settingsButton_Click(object sender, EventArgs e)
         {
-            _buttonManager.OpenSettings();
+            ButtonManager.OpenSettings();
         }
 
+        // todo disconnect button?
+        
         private async void connectButton_Click(object sender, EventArgs e)
         {
-            isConnected = await Connect();
+            if (IsConnected)
+            {
+                MessageBox.Show("You're already connected to a printer!", "Already connected!");
+                return;
+            }
+            IsConnected = await Connect();
         }
     }
 }

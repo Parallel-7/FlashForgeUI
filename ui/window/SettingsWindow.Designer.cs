@@ -32,18 +32,22 @@ namespace FlashForgeUI
         private void InitializeComponent()
         {
             this.Settings = new ReaLTaiizor.Forms.NightForm();
+            this.alwaysOnTopCheck = new ReaLTaiizor.Controls.HopeCheckBox();
+            this.debugCheck = new ReaLTaiizor.Controls.HopeCheckBox();
+            this.nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
             this.customCameraCheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.webUICheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.discordSyncCheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.discordWebhookBox = new System.Windows.Forms.TextBox();
             this.customCameraBox = new System.Windows.Forms.TextBox();
-            this.nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
             this.Settings.SuspendLayout();
             this.SuspendLayout();
             // 
             // Settings
             // 
             this.Settings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(48)))), ((int)(((byte)(51)))));
+            this.Settings.Controls.Add(this.alwaysOnTopCheck);
+            this.Settings.Controls.Add(this.debugCheck);
             this.Settings.Controls.Add(this.nightControlBox1);
             this.Settings.Controls.Add(this.customCameraCheck);
             this.Settings.Controls.Add(this.webUICheck);
@@ -63,6 +67,70 @@ namespace FlashForgeUI
             this.Settings.Text = "Settings";
             this.Settings.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Left;
             this.Settings.TitleBarTextColor = System.Drawing.Color.Gainsboro;
+            // 
+            // alwaysOnTopCheck
+            // 
+            this.alwaysOnTopCheck.CheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.alwaysOnTopCheck.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.alwaysOnTopCheck.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(198)))), ((int)(((byte)(202)))));
+            this.alwaysOnTopCheck.DisabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(186)))), ((int)(((byte)(187)))), ((int)(((byte)(189)))));
+            this.alwaysOnTopCheck.Enable = true;
+            this.alwaysOnTopCheck.EnabledCheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.alwaysOnTopCheck.EnabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
+            this.alwaysOnTopCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
+            this.alwaysOnTopCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.alwaysOnTopCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.alwaysOnTopCheck.Location = new System.Drawing.Point(189, 63);
+            this.alwaysOnTopCheck.Name = "alwaysOnTopCheck";
+            this.alwaysOnTopCheck.Size = new System.Drawing.Size(137, 20);
+            this.alwaysOnTopCheck.TabIndex = 9;
+            this.alwaysOnTopCheck.Text = "Always On Top";
+            this.alwaysOnTopCheck.UseVisualStyleBackColor = true;
+            this.alwaysOnTopCheck.CheckedChanged += new System.EventHandler(this.alwaysOnTopCheck_CheckedChanged);
+            // 
+            // debugCheck
+            // 
+            this.debugCheck.CheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.debugCheck.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.debugCheck.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(198)))), ((int)(((byte)(202)))));
+            this.debugCheck.DisabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(186)))), ((int)(((byte)(187)))), ((int)(((byte)(189)))));
+            this.debugCheck.Enable = true;
+            this.debugCheck.EnabledCheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.debugCheck.EnabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
+            this.debugCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
+            this.debugCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.debugCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.debugCheck.Location = new System.Drawing.Point(414, 63);
+            this.debugCheck.Name = "debugCheck";
+            this.debugCheck.Size = new System.Drawing.Size(81, 20);
+            this.debugCheck.TabIndex = 8;
+            this.debugCheck.Text = "Debug";
+            this.debugCheck.UseVisualStyleBackColor = true;
+            this.debugCheck.CheckedChanged += new System.EventHandler(this.debugCheck_CheckedChanged);
+            // 
+            // nightControlBox1
+            // 
+            this.nightControlBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nightControlBox1.BackColor = System.Drawing.Color.Transparent;
+            this.nightControlBox1.CloseHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(199)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.nightControlBox1.CloseHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.nightControlBox1.DefaultLocation = true;
+            this.nightControlBox1.DisableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
+            this.nightControlBox1.DisableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
+            this.nightControlBox1.EnableCloseColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.EnableMaximizeButton = true;
+            this.nightControlBox1.EnableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.EnableMinimizeButton = true;
+            this.nightControlBox1.EnableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.Location = new System.Drawing.Point(414, 0);
+            this.nightControlBox1.MaximizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.nightControlBox1.MaximizeHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.MinimizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.nightControlBox1.MinimizeHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.Name = "nightControlBox1";
+            this.nightControlBox1.Size = new System.Drawing.Size(139, 31);
+            this.nightControlBox1.TabIndex = 7;
             // 
             // customCameraCheck
             // 
@@ -142,30 +210,6 @@ namespace FlashForgeUI
             this.customCameraBox.Size = new System.Drawing.Size(310, 23);
             this.customCameraBox.TabIndex = 2;
             // 
-            // nightControlBox1
-            // 
-            this.nightControlBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nightControlBox1.BackColor = System.Drawing.Color.Transparent;
-            this.nightControlBox1.CloseHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(199)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.nightControlBox1.CloseHoverForeColor = System.Drawing.Color.White;
-            this.nightControlBox1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.nightControlBox1.DefaultLocation = true;
-            this.nightControlBox1.DisableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
-            this.nightControlBox1.DisableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
-            this.nightControlBox1.EnableCloseColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
-            this.nightControlBox1.EnableMaximizeButton = true;
-            this.nightControlBox1.EnableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
-            this.nightControlBox1.EnableMinimizeButton = true;
-            this.nightControlBox1.EnableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
-            this.nightControlBox1.Location = new System.Drawing.Point(414, 0);
-            this.nightControlBox1.MaximizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.nightControlBox1.MaximizeHoverForeColor = System.Drawing.Color.White;
-            this.nightControlBox1.MinimizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.nightControlBox1.MinimizeHoverForeColor = System.Drawing.Color.White;
-            this.nightControlBox1.Name = "nightControlBox1";
-            this.nightControlBox1.Size = new System.Drawing.Size(139, 31);
-            this.nightControlBox1.TabIndex = 7;
-            // 
             // SettingsWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -182,6 +226,10 @@ namespace FlashForgeUI
             this.Settings.PerformLayout();
             this.ResumeLayout(false);
         }
+
+        private ReaLTaiizor.Controls.HopeCheckBox alwaysOnTopCheck;
+
+        private ReaLTaiizor.Controls.HopeCheckBox debugCheck;
 
         private ReaLTaiizor.Controls.NightControlBox nightControlBox1;
 

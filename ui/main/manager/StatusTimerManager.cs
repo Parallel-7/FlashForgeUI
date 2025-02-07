@@ -14,10 +14,10 @@ namespace FlashForgeUI.ui.main.manager
         private readonly MainMenu _ui;
         private readonly UiHelper _uiHelper;
 
-        public StatusTimerManager(MainMenu form1)
+        public StatusTimerManager(MainMenu mainMenu, UiHelper helper)
         {
-            _ui = form1;
-            _uiHelper = new UiHelper(form1);
+            _ui = mainMenu;
+            _uiHelper = helper;
         }
 
 

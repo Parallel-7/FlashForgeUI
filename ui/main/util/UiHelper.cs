@@ -1,4 +1,7 @@
-﻿namespace FlashForgeUI.ui.main.util
+﻿using System;
+using System.Runtime.InteropServices;
+
+namespace FlashForgeUI.ui.main.util
 {
     /// <summary>
     /// Created to offload some UI code from StatusTimeManager,
@@ -97,7 +100,19 @@
         }
         
         
-        
+        // https://stackoverflow.com/questions/683330/how-to-make-a-window-always-stay-on-top-in-net
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const UInt32 SWP_NOSIZE = 0x0001;
+        private const UInt32 SWP_NOMOVE = 0x0002;
+        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+        [DllImport("user32.dll")] 
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        public void SetOnTop()
+        {
+            SetWindowPos(_ui.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+        }
 
     }
 }

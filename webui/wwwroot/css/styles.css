@@ -385,7 +385,7 @@ body.modal-active {
     }
 
     .status-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 8px;
     }
 
@@ -450,12 +450,10 @@ body.modal-active {
 
 @media (max-width: 480px) {
     .status-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
 
     .button-block {
-        grid-template-columns: 1fr;
         gap: 8px;
     }
 
@@ -478,12 +476,10 @@ body.modal-active {
 
 @media (max-width: 360px) {
     .status-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
     }
 
     .button-block {
-        grid-template-columns: 1fr;
         gap: 6px;
     }
 }
