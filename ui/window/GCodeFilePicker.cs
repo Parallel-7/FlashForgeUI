@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using FlashForgeUI.ui.main.util;
 using SlicerMeta;
 using SlicerMeta.parser.gcode;
 using SlicerMeta.parser.threemf;
+using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
 {
@@ -15,9 +17,18 @@ namespace FlashForgeUI
         public bool StartNow { get; private set; }
         public bool AutoLevel { get; private set; }
         
-        public GCodeFilePicker()
+        public GCodeFilePicker(MainMenu mainMenu)
         {
             InitializeComponent();
+            Shown += (s, e) =>
+            {
+                if (mainMenu.Config.AlwaysOnTop)
+                {
+                    var _uiHelper = new UiHelper(mainMenu);
+                    _uiHelper.SetOnTop(Handle);
+                }
+            };
+            
             // the "default" NightControlBox just closes the application when exit is clicked..??
             FormClosing += (s, e) => 
             {

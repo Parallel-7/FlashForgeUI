@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 using FiveMApi.tcpapi;
+using FlashForgeUI.ui.main.util;
+using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
 {
@@ -8,10 +10,19 @@ namespace FlashForgeUI
     {
         private readonly FlashForgeClient _tcpClient;
         
-        public SendCommandWindow(FlashForgeClient tcpClient)
+        public SendCommandWindow(FlashForgeClient tcpClient, MainMenu mainMenu)
         {
             _tcpClient = tcpClient;
             InitializeComponent();
+            
+            Shown += (s, e) =>
+            {
+                if (mainMenu.Config.AlwaysOnTop)
+                {
+                    var _uiHelper = new UiHelper(mainMenu);
+                    _uiHelper.SetOnTop(Handle);
+                }
+            };
             
             FormClosing += (s, e) => 
             {

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using FiveMApi.api;
+using FlashForgeUI.ui.main.util;
+using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
 {
@@ -10,11 +12,22 @@ namespace FlashForgeUI
 
         public FlashForgePrinter SelectedPrinter { get; private set; }
         public string CheckCode { get; private set; }
+        private MainMenu _mainMenu;
 
-        public PrinterSelectionWindow(List<FlashForgePrinter> printers)
+        public PrinterSelectionWindow(MainMenu mainMenu, List<FlashForgePrinter> printers)
         {
+            _mainMenu = mainMenu;
             InitializeComponent();
             LoadPrinters(printers);
+            
+            Shown += (s, e) =>
+            {
+                if (mainMenu.Config.AlwaysOnTop)
+                {
+                    var _uiHelper = new UiHelper(mainMenu);
+                    _uiHelper.SetOnTop(Handle);
+                }
+            };
             
             // the "default" NightControlBox just closes the application when exit is clicked..??
             FormClosing += (s, e) => 
@@ -46,7 +59,7 @@ namespace FlashForgeUI
             var selectedItem = listViewPrinters.SelectedItems[0];
             var printer = (FlashForgePrinter)selectedItem.Tag;
 
-            using (var inputForm = new PrinterPairingWindow())
+            using (var inputForm = new PrinterPairingWindow(_mainMenu))
             {
                 var result = inputForm.ShowDialog();
 

@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FiveMApi.api;
+using FlashForgeUI.ui.main.util;
+using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
 {
@@ -21,7 +23,7 @@ namespace FlashForgeUI
         public bool AutoLevel { get; private set; }
         
         
-        public GCodeListWindow(FiveMClient client, bool fullList = false)
+        public GCodeListWindow(MainMenu mainMenu, FiveMClient client, bool fullList = false)
         {
             InitializeComponent();
             _client = client;
@@ -31,6 +33,15 @@ namespace FlashForgeUI
             gcodeFiles.MultiSelect = false;
             gcodeFiles.Click += ListViewGcodeFiles_Click;
             PopulateList();
+            
+            Shown += (s, e) =>
+            {
+                if (mainMenu.Config.AlwaysOnTop)
+                {
+                    var _uiHelper = new UiHelper(mainMenu);
+                    _uiHelper.SetOnTop(Handle);
+                }
+            };
             
             // the "default" NightControlBox just closes the application when exit is clicked..??
             FormClosing += (s, e) => 

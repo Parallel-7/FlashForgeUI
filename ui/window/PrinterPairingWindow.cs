@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using FlashForgeUI.ui.main.util;
+using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
 {
@@ -8,9 +10,19 @@ namespace FlashForgeUI
         
         public string CheckCode { get; private set; }
         
-        public PrinterPairingWindow()
+        public PrinterPairingWindow(MainMenu mainMenu)
         {
             InitializeComponent();
+            
+            Shown += (s, e) =>
+            {
+                if (mainMenu.Config.AlwaysOnTop)
+                {
+                    var _uiHelper = new UiHelper(mainMenu);
+                    _uiHelper.SetOnTop(Handle);
+                }
+            };
+            
             // the "default" NightControlBox just closes the application when exit is clicked..??
             FormClosing += (s, e) => 
             {

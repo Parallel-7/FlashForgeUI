@@ -7,11 +7,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using AForge.Video;
 using FiveMApi.api;
 using FlashForgeUI.manager;
 using FlashForgeUI.program.util;
 using FlashForgeUI.ui.main.manager;
+using FlashForgeUI.ui.main.manager.camera;
 using FlashForgeUI.ui.main.util;
 using FlashForgeUI.webui;
 using Microsoft.VisualBasic;
@@ -24,42 +25,41 @@ namespace FlashForgeUI.ui.main
         // and theme accordingly if we cannot get the scroll to bottom to work
         // it does look nicer though.
         
-        //internal MJPEGStream mjpegStream;
+        internal MJPEGStream MjpegStream;
 
-        public FiveMClient printerClient;
+        public FiveMClient PrinterClient;
 
-        internal PrinterWebServer webServer;
+        internal PrinterWebServer WebServer;
 
-        internal WebhookHelper webhook;
+        internal WebhookHelper Webhook;
 
-        internal Config config;
+        internal Config Config;
         
         
         // Managers
         private ConnectionManager _connectionManager;
-        internal CameraStreamManager StreamManager;
         private StatusTimerManager _statusTimerManager;
+        
+        internal MjpegStreamManager MjpegStreamManager;
         internal ButtonManager ButtonManager;
 
         private UiHelper _uiHelper;
         
         
-        public CameraStreamManager GetCameraStreamManager()
+        public MjpegStreamManager GetCameraStreamManager()
         { // for WebhookHelper (sending preview image to discord)
-            return StreamManager;
+            return MjpegStreamManager;
         }
 
         internal bool IsConnected;
-        internal bool WebcamOn;
-        
+
         public MainMenu()
         {
             InitializeComponent();
             
             // hook form events
             Shown += MainMenu_Shown;
-            //Closing += MainMenu_Closing;
-            FormClosing += MainMenu_Closing;
+            FormClosed += MainMenu_Closed;
             
             // hook timer events
             timerStatusUpdate.Tick += timerStatusUpdate_Tick;
@@ -70,12 +70,12 @@ namespace FlashForgeUI.ui.main
         
         private void InitWebhook()
         {
-            if (string.IsNullOrEmpty(config.WebhookUrl))
+            if (string.IsNullOrEmpty(Config.WebhookUrl))
             {
                 MessageBox.Show("Invalid (or missing) webhook url in config.json! Discord sync disabled");
                 return;
             }
-            webhook = new WebhookHelper(config.WebhookUrl, this);
+            Webhook = new WebhookHelper(Config.WebhookUrl, this);
         }
         
         private void StartTimers()
@@ -84,37 +84,33 @@ namespace FlashForgeUI.ui.main
             timerSyncInfo_Tick(null, null);
             timerStatusUpdate.Start();
             timerSyncInfo.Start();
-            if (config.DiscordSync) timerSyncDiscord.Start();
-            if (printerClient.IsPro || config.CustomCamera && !string.IsNullOrEmpty(config.CustomCameraUrl)) {
-                StreamManager.Start();
-                WebcamOn = true;
-                toggleWebcamButton.Text = "Preview off";
-            }
+            if (Config.DiscordSync) timerSyncDiscord.Start();
+            if (PrinterClient.IsPro || Config.CustomCamera && !string.IsNullOrEmpty(Config.CustomCameraUrl)) ButtonManager.PreviewOn();
         }
 
         private void StartWebUi()
         {
-            webServer = new PrinterWebServer(this, config);
-            webServer.Start();
+            WebServer = new PrinterWebServer(this, Config);
+            WebServer.Start();
         }
 
         private void CheckFeatures()
         {
-            if (!Compat.Is313OrAbove(printerClient.FirmVer))
+            if (!Compat.Is313OrAbove(PrinterClient.FirmVer))
             {
                 AppendLog("This printer is running older firmware, some features may not be available, or work as intended. " +
                           "Please update to the latest firmware when possible for better compatibility");
                 clearPlatformButton.Visible = false;
             }
             
-            if (!printerClient.LedControl)
+            if (!PrinterClient.LedControl)
             {
                 AppendLog("LEDs are not equipped or properly configured on this printer.");
                 ledOffButton.Visible = false;
                 ledOnButton.Visible = false;
             }
 
-            if (printerClient.FiltrationControl) return;
+            if (PrinterClient.FiltrationControl) return;
             AppendLog("Filtration control is not available for this printer.");
             filtrationPanel.Visible = false;
             setChamberFanButton.Visible = false;
@@ -126,14 +122,14 @@ namespace FlashForgeUI.ui.main
         private async void timerSyncDiscord_Tick(object sender, EventArgs e)
         {
             Debug.Write("Ticking SyncDiscord");
-            await webhook.SendStatus(printerClient); // todo handle result?
+            await Webhook.SendStatus(PrinterClient); // todo handle result?
         }
         
         private async void timerSyncInfo_Tick(object sender, EventArgs e)
         {
             Debug.WriteLine("Ticking SyncInfo");
-            var info = await printerClient.Info.Get();
-            printerClient.CacheDetails(info);
+            var info = await PrinterClient.Info.Get();
+            PrinterClient.CacheDetails(info);
         }
         
         private async void timerStatusUpdate_Tick(object sender, EventArgs e)
@@ -146,14 +142,8 @@ namespace FlashForgeUI.ui.main
         {
             Debug.WriteLine($"AppendLog called: {message}");
     
-            if (logBox.InvokeRequired)
-            {
-                logBox.Invoke(new Action(() => AddLogMessage(message)));
-            }
-            else
-            {
-                AddLogMessage(message);
-            }
+            if (logBox.InvokeRequired) logBox.Invoke(new Action(() => AddLogMessage(message)));
+            else AddLogMessage(message);
         }
 
         private void AddLogMessage(string message)
@@ -174,8 +164,7 @@ namespace FlashForgeUI.ui.main
         
         private async Task<bool> CheckJobReady()
         {
-            var info = await printerClient.Info.Get();
-            //if (info.DoorOpen) MessageBox.Show("Don't forget to close the printer door!", "Door ajar");
+            var info = await PrinterClient.Info.Get();
             switch (info.Status)
             {
                 case "ready":
@@ -206,7 +195,7 @@ namespace FlashForgeUI.ui.main
                     _lastJobFileName = currentJobFileName;
 
                     // Fetch the thumbnail
-                    var thumbnailBytes = await printerClient.Files.GetGCodeThumbnail(currentJobFileName);
+                    var thumbnailBytes = await PrinterClient.Files.GetGCodeThumbnail(currentJobFileName);
                     if (thumbnailBytes != null && thumbnailBytes.Length > 0)
                     {
                         using (var ms = new MemoryStream(thumbnailBytes))
@@ -296,7 +285,7 @@ namespace FlashForgeUI.ui.main
 
             return new
             {
-                isPro = printerClient.IsPro,
+                isPro = PrinterClient.IsPro,
                 currentJob = currentJobLabel.Text,
                 eta = etaLabel.Text,
                 extruderTemp = extruderTempLabel.Text,
@@ -323,20 +312,23 @@ namespace FlashForgeUI.ui.main
         internal async void MainMenu_Shown(object sender, EventArgs e)
         {
             // load config
-            config = new Config().Load();
+            Config = new Config().Load();
             
             _uiHelper = new UiHelper(this);
-            if (config.AlwaysOnTop) _uiHelper.SetOnTop();
+            if (Config.AlwaysOnTop) _uiHelper.SetOnTop();
 
             // init managers
             _connectionManager = new ConnectionManager(this);
-            StreamManager = new CameraStreamManager(this);
+            
             _statusTimerManager = new StatusTimerManager(this, _uiHelper);
+            
+            
             ButtonManager = new ButtonManager(this);
+            MjpegStreamManager = new MjpegStreamManager(this);
             
             
             // only show console window if in debug mode
-            if (config.DebugMode) Program.AllocConsole();
+            if (Config.DebugMode) Program.AllocConsole();
 
             IsConnected = await Connect();
         }
@@ -346,14 +338,14 @@ namespace FlashForgeUI.ui.main
             var connected = await _connectionManager.FindPrinterAndConnect();
             if (connected)
             {
-                AppendLog($"Connected to {printerClient.PrinterName} @ {printerClient.IpAddress}");
-                AppendLog($"Firmware version: {printerClient.FirmwareVersion}");
+                AppendLog($"Connected to {PrinterClient.PrinterName} @ {PrinterClient.IpAddress}");
+                AppendLog($"Firmware version: {PrinterClient.FirmwareVersion}");
 
                 CheckFeatures();
                 
-                if (config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
+                if (Config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
                 StartTimers();
-                if (config.WebUi) StartWebUi();
+                if (Config.WebUi) StartWebUi();
 
                 return true;
             }
@@ -361,9 +353,10 @@ namespace FlashForgeUI.ui.main
             return false;
         }
         
-        internal void MainMenu_Closing(object sender, CancelEventArgs cancelEventArgs)
+
+        internal void MainMenu_Closed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit();
+            MjpegStreamManager.Stop();
         }
 
         private async void ledOnButton_Click(object sender, EventArgs e)
@@ -407,7 +400,7 @@ namespace FlashForgeUI.ui.main
 
             await CmdWait();
             AppendLog("Homing axes");
-            var homed = await printerClient.Control.HomeAxes();
+            var homed = await PrinterClient.Control.HomeAxes();
             AppendLog(homed ? "Homed." : "Error homing axes.");
             CmdRelease();
         }
@@ -432,7 +425,7 @@ namespace FlashForgeUI.ui.main
 
         private void sendCmdButton_Click(object sender, EventArgs e)
         {
-            new SendCommandWindow(printerClient.TcpClient).ShowDialog();
+            new SendCommandWindow(PrinterClient.TcpClient, this).ShowDialog();
         }
 
         private void toggleWebcamButton_Click(object sender, EventArgs e)
@@ -455,7 +448,7 @@ namespace FlashForgeUI.ui.main
                 else
                 {
                     await CmdWait();
-                    if (await printerClient.TempControl.SetBedTemp(temp)) AppendLog($"Bed temp set to {temp}C");
+                    if (await PrinterClient.TempControl.SetBedTemp(temp)) AppendLog($"Bed temp set to {temp}C");
                     else AppendLog("Unable to set bed temp!!");
                     CmdRelease();
                 }
@@ -475,7 +468,7 @@ namespace FlashForgeUI.ui.main
             }
 
             await CmdWait();
-            if (!await printerClient.TempControl.CancelBedTemp()) AppendLog("Unable to turn off bed heating!!");
+            if (!await PrinterClient.TempControl.CancelBedTemp()) AppendLog("Unable to turn off bed heating!!");
             else AppendLog("Bed heating disabled.");
             CmdRelease();
         }
@@ -495,7 +488,7 @@ namespace FlashForgeUI.ui.main
                 else
                 {
                     await CmdWait();
-                    if (await printerClient.TempControl.SetExtruderTemp(temp)) AppendLog($"Extruder temp set to {temp}C");
+                    if (await PrinterClient.TempControl.SetExtruderTemp(temp)) AppendLog($"Extruder temp set to {temp}C");
                     else AppendLog("Unable to set extruder temp!!");
                     CmdRelease();
                 }
@@ -515,7 +508,7 @@ namespace FlashForgeUI.ui.main
             }
 
             await CmdWait();
-            if (!await printerClient.TempControl.CancelExtruderTemp()) AppendLog("Unable to turn off extruder heat!!");
+            if (!await PrinterClient.TempControl.CancelExtruderTemp()) AppendLog("Unable to turn off extruder heat!!");
             else AppendLog("Extruder heating disabled.");
             CmdRelease();
         }

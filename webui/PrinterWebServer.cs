@@ -29,10 +29,10 @@ namespace FlashForgeUI.webui
         {
             _ui = ui;
             //_config = config;
-            _serverBridge = new WebServerBridge(ui.printerClient);
+            _serverBridge = new WebServerBridge(ui.PrinterClient);
             _webSocketHandler = new WebSocketHandler(ui, _serverBridge, config);
             _baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "webui//wwwroot");
-            _printerIp = ui.printerClient.IpAddress;
+            _printerIp = ui.PrinterClient.IpAddress;
 
             Debug.WriteLine($"PrinterWebServer initialized with base directory: {_baseDirectory}");
             Debug.WriteLine($"Printer IP Address: {_printerIp}");
@@ -186,11 +186,11 @@ namespace FlashForgeUI.webui
                     if (Path.GetFileName(fullPath).Equals("index.html", StringComparison.OrdinalIgnoreCase))
                     {
                         var content = File.ReadAllText(fullPath);
-                        if (_ui.config.CustomCamera)
+                        if (_ui.Config.CustomCamera)
                         {
-                            var url = _ui.config.CustomCameraUrl.Replace("{IpAddress}", _ui.printerClient.IpAddress);
+                            var url = _ui.Config.CustomCameraUrl.Replace("{IpAddress}", _ui.PrinterClient.IpAddress);
                             content = content.Replace("STREAM_URL_PLACEHOLDER", url);
-                        } else content = content.Replace("STREAM_URL_PLACEHOLDER", $"http://{_ui.printerClient.IpAddress}:8080/?action=stream");
+                        } else content = content.Replace("STREAM_URL_PLACEHOLDER", $"http://{_ui.PrinterClient.IpAddress}:8080/?action=stream");
                         var buffer = Encoding.UTF8.GetBytes(content);
                         response.ContentType = "text/html";
                         response.ContentLength64 = buffer.Length;

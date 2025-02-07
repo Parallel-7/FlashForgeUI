@@ -48,9 +48,9 @@ namespace FlashForgeUI.ui.main.manager
             try
             { // last used printer is online, attempt connection
                 
-                _ui.printerClient = new FiveMClient(matchingPrinter.IPAddress.ToString(), matchingPrinter.SerialNumber,
+                _ui.PrinterClient = new FiveMClient(matchingPrinter.IPAddress.ToString(), matchingPrinter.SerialNumber,
                     lastPrinter.CheckCode);
-                if (await _ui.printerClient.InitControl()) // control OK
+                if (await _ui.PrinterClient.InitControl()) // control OK
                 {
                     return true;
                 }
@@ -79,11 +79,11 @@ namespace FlashForgeUI.ui.main.manager
                 return false;
             try
             {
-                _ui.printerClient = new FiveMClient(ipAddress, serialNumber, checkCode);
-                if (await _ui.printerClient.InitControl()) // control OK
+                _ui.PrinterClient = new FiveMClient(ipAddress, serialNumber, checkCode);
+                if (await _ui.PrinterClient.InitControl()) // control OK
                 {
                     // cache new printer 
-                    new PrinterDetails(_ui.printerClient.PrinterName, ipAddress, serialNumber, checkCode).Save();
+                    new PrinterDetails(_ui.PrinterClient.PrinterName, ipAddress, serialNumber, checkCode).Save();
                     return true;
                 }
 
@@ -108,7 +108,7 @@ namespace FlashForgeUI.ui.main.manager
         
         private async Task<bool> ConnectNewPrinter(IEnumerable<FlashForgePrinter> printers)
         {
-            using (var selectionMenu = new PrinterSelectionWindow(printers.ToList()))
+            using (var selectionMenu = new PrinterSelectionWindow(_ui, printers.ToList()))
             {
                 var result = selectionMenu.ShowDialog();
                 if (result == DialogResult.OK) if (await ConnectAndSave(selectionMenu.SelectedPrinter, selectionMenu.CheckCode)) return true;

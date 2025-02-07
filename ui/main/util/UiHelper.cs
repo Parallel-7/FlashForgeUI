@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using ReaLTaiizor.Controls;
 
 namespace FlashForgeUI.ui.main.util
 {
@@ -31,7 +32,7 @@ namespace FlashForgeUI.ui.main.util
             _ui.weightLabel.Text = "Weight: --";
             _ui.lengthLabel.Text = "Length: --";
             _ui.AppendLog("Lost connection to printer.");
-            _ui.StreamManager.Stop();
+            _ui.MjpegStreamManager.Stop();
         }
         
         
@@ -111,7 +112,12 @@ namespace FlashForgeUI.ui.main.util
 
         public void SetOnTop()
         {
-            SetWindowPos(_ui.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+            SetOnTop(_ui.Handle);
+        }
+
+        public void SetOnTop(IntPtr handle)
+        {
+            SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
         }
 
     }

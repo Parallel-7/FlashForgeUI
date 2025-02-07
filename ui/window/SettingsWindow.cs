@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
+using FlashForgeUI.ui.main.util;
 using MainMenu = FlashForgeUI.ui.main.MainMenu;
 
 namespace FlashForgeUI
@@ -7,16 +9,24 @@ namespace FlashForgeUI
     public partial class SettingsWindow : Form
     {
         private MainMenu _ui;
+        private readonly UiHelper _uiHelper; 
         
         public SettingsWindow(MainMenu ui)
         {
             InitializeComponent();
             _ui = ui;
+            _uiHelper = new UiHelper(_ui);
             
             LoadConfigToUI();
+
+            Shown += (s, e) =>
+            {
+                if (_ui.Config.AlwaysOnTop) _uiHelper.SetOnTop(Handle);
+            };
             
             FormClosing += (s, e) => 
             {
+                Debug.WriteLine(e.CloseReason.ToString());
                 if (e.CloseReason == CloseReason.ApplicationExitCall)
                 {
                     e.Cancel = true;
@@ -29,38 +39,38 @@ namespace FlashForgeUI
 
         private void Save()
         {
-            _ui.config.Save();
+            _ui.Config.Save();
         }
         
         private void LoadConfigToUI()
         {
             // custom camera & box
-            if (_ui.config.CustomCamera)
+            if (_ui.Config.CustomCamera)
             {
-                customCameraBox.Text = _ui.config.CustomCameraUrl;
+                customCameraBox.Text = _ui.Config.CustomCameraUrl;
                 customCameraCheck.Checked = true;
             }
 
             // discord sync & webhook
-            if (_ui.config.DiscordSync)
+            if (_ui.Config.DiscordSync)
             {
-                discordWebhookBox.Text = _ui.config.WebhookUrl;
+                discordWebhookBox.Text = _ui.Config.WebhookUrl;
                 discordSyncCheck.Checked = true;
             }
 
             // webUI toggle
-            webUICheck.Checked = _ui.config.WebUi;
+            webUICheck.Checked = _ui.Config.WebUi;
             
             // debug mode toggle
-            debugCheck.Checked = _ui.config.DebugMode;
+            debugCheck.Checked = _ui.Config.DebugMode;
             
             // always on top toggle
-            alwaysOnTopCheck.Checked = _ui.config.AlwaysOnTop;
+            alwaysOnTopCheck.Checked = _ui.Config.AlwaysOnTop;
         }
 
         private void webUICheck_CheckedChanged(object sender, EventArgs e)
         {
-            _ui.config.WebUi = webUICheck.Checked;
+            _ui.Config.WebUi = webUICheck.Checked;
             Save();
         }
 
@@ -74,11 +84,11 @@ namespace FlashForgeUI
                     return;
                 }
 
-                _ui.config.CustomCamera = true;
-                _ui.config.CustomCameraUrl = customCameraBox.Text;
+                _ui.Config.CustomCamera = true;
+                _ui.Config.CustomCameraUrl = customCameraBox.Text;
                 Save();
             }
-            else _ui.config.CustomCamera = false;
+            else _ui.Config.CustomCamera = false;
             Save();
         }
 
@@ -92,23 +102,23 @@ namespace FlashForgeUI
                     return;
                 }
 
-                _ui.config.DiscordSync = true;
-                _ui.config.WebhookUrl = customCameraBox.Text;
+                _ui.Config.DiscordSync = true;
+                _ui.Config.WebhookUrl = customCameraBox.Text;
                 Save();
             }
-            else _ui.config.DiscordSync = false;
+            else _ui.Config.DiscordSync = false;
             Save();
         }
 
         private void debugCheck_CheckedChanged(object sender, EventArgs e)
         {
-            _ui.config.DebugMode = debugCheck.Checked;
+            _ui.Config.DebugMode = debugCheck.Checked;
             Save();
         }
 
         private void alwaysOnTopCheck_CheckedChanged(object sender, EventArgs e)
         {
-            _ui.config.AlwaysOnTop = alwaysOnTopCheck.Checked;
+            _ui.Config.AlwaysOnTop = alwaysOnTopCheck.Checked;
             Save();
         }
     }

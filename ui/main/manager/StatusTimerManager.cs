@@ -28,7 +28,7 @@ namespace FlashForgeUI.ui.main.manager
 
         private bool DiscordSyncEnabled()
         {
-            return _ui.config.DiscordSync;
+            return _ui.Config.DiscordSync;
         }
 
 
@@ -36,12 +36,12 @@ namespace FlashForgeUI.ui.main.manager
         {
             if (status.Equals("completed") && !_completionFlag)
             {
-                if (DiscordSyncEnabled()) await _ui.webhook.SendMessage("Completed job: " + machineInfo.PrintFileName);
+                if (DiscordSyncEnabled()) await _ui.Webhook.SendMessage("Completed job: " + machineInfo.PrintFileName);
                 _completionFlag = true;
                 return;
             }
             _completionFlag = false; // reset flag
-            if (DiscordSyncEnabled()) await _ui.webhook.SendMessage("Printer status update: " + machineInfo.Status);
+            if (DiscordSyncEnabled()) await _ui.Webhook.SendMessage("Printer status update: " + machineInfo.Status);
         }
 
         private async Task CheckPartCool(FiveMClient.MachineInfo machineInfo, string status)
@@ -54,7 +54,7 @@ namespace FlashForgeUI.ui.main.manager
             if (machineInfo.ExtruderTemp.AsDouble() <= 40 && !_completionCooledFlag)
             {
                 _completionCooledFlag = true;
-                if (DiscordSyncEnabled()) await _ui.webhook.SendMessage("Ready for removal: " + machineInfo.PrintFileName);
+                if (DiscordSyncEnabled()) await _ui.Webhook.SendMessage("Ready for removal: " + machineInfo.PrintFileName);
                 MessageBox.Show(machineInfo.PrintFileName + " ready for removal!", "Print Complete!");
             }
         }
@@ -141,9 +141,9 @@ namespace FlashForgeUI.ui.main.manager
 
         private void SetGeneralInfo(FiveMClient.MachineInfo machineInfo)
         {
-            _ui.totalFilamentLabel.Text = $"Filament used: {_ui.printerClient.LifetimeFilamentMeters}";
+            _ui.totalFilamentLabel.Text = $"Filament used: {_ui.PrinterClient.LifetimeFilamentMeters}";
             //Console.WriteLine(_ui.totalFilamentLabel.Text);
-            _ui.totalRunTimeLabel.Text = $"Run time: {_ui.printerClient.LifetimePrintTime}";
+            _ui.totalRunTimeLabel.Text = $"Run time: {_ui.PrinterClient.LifetimePrintTime}";
             _ui.printerStatusLabel.Text = $"Printer: {machineInfo.Status}";
             // removed because this is just in the firmware but does nothing (the printer doesn't know if the door is opened or closed)
             //_ui.doorStatusLabel.Text = machineInfo.DoorOpen ? "Door Status: Open" : "Door Status: Closed";
@@ -206,7 +206,7 @@ namespace FlashForgeUI.ui.main.manager
         
         public async Task TickStatusUpdate()
         {
-            var machineInfo = await _ui.printerClient.Info.Get();
+            var machineInfo = await _ui.PrinterClient.Info.Get();
             if (machineInfo != null)
             {
                 _statusUpdateFailures--;

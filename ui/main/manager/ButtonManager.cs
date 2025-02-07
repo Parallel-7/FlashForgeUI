@@ -33,14 +33,14 @@ namespace FlashForgeUI.manager
         public async Task LedOn()
         {
             if (!Check()) return;
-            await _ui.printerClient.Control.SetLedOn();
+            await _ui.PrinterClient.Control.SetLedOn();
             _ui.AppendLog("LED turned on.");
         }
 
         public async Task LedOff()
         {
             if (!Check()) return;
-            await _ui.printerClient.Control.SetLedOff();
+            await _ui.PrinterClient.Control.SetLedOff();
             _ui.AppendLog("LED turned off.");
         }
         
@@ -48,31 +48,27 @@ namespace FlashForgeUI.manager
         public void TogglePreview()
         {
             if (!Check()) return;
-            if (_ui.printerClient == null) return;
-            if (!_ui.printerClient.IsPro && !_ui.config.CustomCamera) // check for webcam or custom setup
+            if (_ui.PrinterClient == null) return;
+            if (!_ui.PrinterClient.IsPro && !_ui.Config.CustomCamera) // check for webcam or custom setup
             {
                 MessageBox.Show("No webcam!",
                     "The regular 5M has no built-in webcam. If you've installed one yourself, you can disable this check in settings");
                 return;
             }
-            if (!_ui.WebcamOn) PreviewOn();
+            if (!_ui.MjpegStreamManager.IsRunning()) PreviewOn();
             else PreviewOff();
         }
 
         public void PreviewOn()
         {
-            if (_ui.StreamManager.Start())
-            {
-                _ui.toggleWebcamButton.Text = "Preview Off";
-                _ui.WebcamOn = true;
-            }
+            _ui.MjpegStreamManager.Start();
+            _ui.toggleWebcamButton.Text = "Preview Off";
         }
 
         public void PreviewOff()
         {
-            _ui.StreamManager.Stop();
+            _ui.MjpegStreamManager.Stop();
             _ui.toggleWebcamButton.Text = "Preview On";
-            _ui.WebcamOn = false;
         }
         
         
@@ -82,12 +78,12 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             // todo this needs to be coded into the webUI, this is a lazy fix for now since it will invoke this (indirectly) anyways
-            if (!_ui.printerClient.IsPro)
+            if (!_ui.PrinterClient.IsPro)
             {
                 _ui.AppendLog("Not equipped with filtration.");
                 return;
             }
-            await _ui.printerClient.Control.SetFiltrationOff();
+            await _ui.PrinterClient.Control.SetFiltrationOff();
             _ui.AppendLog("Filtration turned off.");
         }
         
@@ -95,14 +91,14 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             // todo same for here
-            if (!_ui.printerClient.IsPro)
+            if (!_ui.PrinterClient.IsPro)
             {
                 _ui.AppendLog("Not equipped with filtration.");
                 return;
             }
             await _ui.CmdWait();
-            if (!await _ui.printerClient.Control.SetFiltrationOff()) _ui.AppendLog("(Error) Unable to reset filtration status");
-            if (!await _ui.printerClient.Control.SetExternalFiltrationOn()) _ui.AppendLog("(Error) Unable to start external filtration");
+            if (!await _ui.PrinterClient.Control.SetFiltrationOff()) _ui.AppendLog("(Error) Unable to reset filtration status");
+            if (!await _ui.PrinterClient.Control.SetExternalFiltrationOn()) _ui.AppendLog("(Error) Unable to start external filtration");
             else _ui.AppendLog("External filtration turned on.");
             _ui.CmdRelease();
         }
@@ -111,14 +107,14 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             // todo also same for here
-            if (!_ui.printerClient.IsPro)
+            if (!_ui.PrinterClient.IsPro)
             {
                 _ui.AppendLog("Not equipped with filtration.");
                 return;
             }
             await _ui.CmdWait();
-            if (!await _ui.printerClient.Control.SetFiltrationOff()) _ui.AppendLog("(Error) Unable to reset filtration status");
-            if (!await _ui.printerClient.Control.SetInternalFiltrationOn()) _ui.AppendLog("(Error) Unable to start internal filtration");
+            if (!await _ui.PrinterClient.Control.SetFiltrationOff()) _ui.AppendLog("(Error) Unable to reset filtration status");
+            if (!await _ui.PrinterClient.Control.SetInternalFiltrationOn()) _ui.AppendLog("(Error) Unable to start internal filtration");
             else _ui.AppendLog("Internal filtration turned on");
             _ui.CmdRelease();
         }
@@ -128,7 +124,7 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             var input = Interaction.InputBox("Fan speed (0-100)", "Set Cooling Fan Speed", "0");
-            if (int.TryParse(input, out var speed)) await _ui.printerClient.Control.SetCoolingFanSpeed(speed);
+            if (int.TryParse(input, out var speed)) await _ui.PrinterClient.Control.SetCoolingFanSpeed(speed);
             else _ui.AppendLog("Setting cooling fan speed cancelled.");
         }
         
@@ -136,13 +132,13 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             // todo this also needs to be coded into the web ui
-            if (!_ui.printerClient.IsPro)
+            if (!_ui.PrinterClient.IsPro)
             {
                 _ui.AppendLog("Not equipped with chamber fan.");
                 return;
             }
             var input = Interaction.InputBox("Fan speed (0-100)", "Set Chamber Fan Speed", "0");
-            if (int.TryParse(input, out var speed)) await _ui.printerClient.Control.SetChamberFanSpeed(speed);
+            if (int.TryParse(input, out var speed)) await _ui.PrinterClient.Control.SetChamberFanSpeed(speed);
             else _ui.AppendLog("Setting cooling fan speed cancelled.");
         }
         
@@ -152,8 +148,8 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             await _ui.CmdWait();
-            if (!await _ui.printerClient.Info.IsPrinting()) _ui.AppendLog("No job to pause...");
-            else if (!await _ui.printerClient.JobControl.PausePrintJob()) _ui.AppendLog("(Error) Unable to pause current job");
+            if (!await _ui.PrinterClient.Info.IsPrinting()) _ui.AppendLog("No job to pause...");
+            else if (!await _ui.PrinterClient.JobControl.PausePrintJob()) _ui.AppendLog("(Error) Unable to pause current job");
             else _ui.AppendLog("Job paused.");
             _ui.CmdRelease();
         }
@@ -163,7 +159,7 @@ namespace FlashForgeUI.manager
             if (!Check()) return;
             await _ui.CmdWait();
             // need to see what "state" is when paused, could be exactly that lol
-            if (!await _ui.printerClient.JobControl.ResumePrintJob()) _ui.AppendLog("(Error) Unable to resume current job");
+            if (!await _ui.PrinterClient.JobControl.ResumePrintJob()) _ui.AppendLog("(Error) Unable to resume current job");
             else _ui.AppendLog("Job resumed.");
             _ui.CmdRelease();
         }
@@ -172,8 +168,8 @@ namespace FlashForgeUI.manager
         {
             if (!Check()) return;
             await _ui.CmdWait();
-            if (!await _ui.printerClient.Info.IsPrinting()) _ui.AppendLog("No job to stop...");
-            else if (!await _ui.printerClient.JobControl.CancelPrintJob()) _ui.AppendLog("(Error) Unable to cancel current job");
+            if (!await _ui.PrinterClient.Info.IsPrinting()) _ui.AppendLog("No job to stop...");
+            else if (!await _ui.PrinterClient.JobControl.CancelPrintJob()) _ui.AppendLog("(Error) Unable to cancel current job");
             else _ui.AppendLog("Job cancelled.");
             _ui.CmdRelease();
         }
@@ -181,11 +177,11 @@ namespace FlashForgeUI.manager
         public async Task ClearPlatform()
         {
             if (!Check()) return;
-            if (!Compat.Is313OrAbove(_ui.printerClient.FirmVer)) return; // not supported below fw 3.13.3
+            if (!Compat.Is313OrAbove(_ui.PrinterClient.FirmVer)) return; // not supported below fw 3.13.3
             await _ui.CmdWait();
-            var state = await _ui.printerClient.Info.GetState();
+            var state = await _ui.PrinterClient.Info.GetState();
             if (state != MachineState.Cancelled && state != MachineState.Completed) _ui.AppendLog("Nothing to clear...");
-            else if (!await _ui.printerClient.JobControl.ClearPlatform()) _ui.AppendLog("Unable to clear printing state.");
+            else if (!await _ui.PrinterClient.JobControl.ClearPlatform()) _ui.AppendLog("Unable to clear printing state.");
             else
             {
                 _ui.AppendLog(state == MachineState.Cancelled
@@ -200,7 +196,7 @@ namespace FlashForgeUI.manager
         public async Task<bool> SelectAndUploadGCodeFile()
         {
             if (!Check()) return false;
-            using (var form = new GCodeFilePicker())
+            using (var form = new GCodeFilePicker(_ui))
             {
                 // todo this needs to be tested (the ReaLTaiizor refactor)
                 // show local g-code file picker
@@ -213,7 +209,7 @@ namespace FlashForgeUI.manager
                     ? $"Uploading and starting job {filePath} (Auto level: {autoLevel}"
                     : $"Uploading job file {filePath}");
 
-                var ok = await _ui.printerClient.JobControl.UploadFile(filePath, startNow, autoLevel);
+                var ok = await _ui.PrinterClient.JobControl.UploadFile(filePath, startNow, autoLevel);
                 if (!ok) _ui.AppendLog($"Uploading job failed.");
                 return ok;
             }
@@ -222,7 +218,7 @@ namespace FlashForgeUI.manager
         public async Task SelectRecentJob()
         {
             if (!Check()) return;
-            var localFileList = new GCodeListWindow(_ui.printerClient); // get recent (last 10 files) list
+            var localFileList = new GCodeListWindow(_ui, _ui.PrinterClient); // get recent (last 10 files) list
             var result = localFileList.ShowDialog();
             localFileList.Dispose();
             if (result == DialogResult.OK) await StartLocalJob(localFileList);
@@ -232,7 +228,7 @@ namespace FlashForgeUI.manager
         public async Task SelectLocalJob()
         {
             if (!Check()) return;
-            var localFileList = new GCodeListWindow(_ui.printerClient, true); // get full list
+            var localFileList = new GCodeListWindow(_ui, _ui.PrinterClient, true); // get full list
             var result = localFileList.ShowDialog();
             localFileList.Dispose();
             if (result == DialogResult.OK) await StartLocalJob(localFileList);
@@ -242,7 +238,7 @@ namespace FlashForgeUI.manager
         private async Task StartLocalJob(GCodeListWindow localFileListWindow)
         { // get selected file from list and start the print
             if (!Check()) return;
-            if (await _ui.printerClient.JobControl.PrintLocalFile(localFileListWindow.SelectedFileName,
+            if (await _ui.PrinterClient.JobControl.PrintLocalFile(localFileListWindow.SelectedFileName,
                     localFileListWindow.AutoLevel))
             {
                 _ui.AppendLog($"Starting job {localFileListWindow.SelectedFileName}");
