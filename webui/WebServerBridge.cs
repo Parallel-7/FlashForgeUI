@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using FiveMApi.api;
+using FlashForgeUI.ui.main.util;
 
 namespace FlashForgeUI.webui
 {
@@ -15,6 +16,14 @@ namespace FlashForgeUI.webui
             _client = client;
         }
 
+
+        public async Task<string> ClearStatus()
+        {
+            if (!Compat.Is313OrAbove(_client.FirmVer)) return "Incompatible operation, please update your firmware to 3.1.3+";
+            if (await _client.JobControl.ClearPlatform()) return "Status cleared";
+            return "Error clearing status.";
+        }
+        
         /// <summary>
         /// Pauses the current print job.
         /// </summary>

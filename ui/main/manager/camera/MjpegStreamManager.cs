@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Threading.Tasks;
 using AForge.Video;
+using FlashForgeUI.ui.main.util;
 
 namespace FlashForgeUI.ui.main.manager.camera
 {
@@ -12,8 +15,12 @@ namespace FlashForgeUI.ui.main.manager.camera
         private readonly MainMenu _ui;
 
         private Bitmap _lastFrame;
+        private Stopwatch _lastFrameTime = new Stopwatch();
+        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private CancellationToken _ct;
 
         private int _mjpegStreamErrors;
+        
 
         public MjpegStreamManager(MainMenu form1)
         {
@@ -23,23 +30,53 @@ namespace FlashForgeUI.ui.main.manager.camera
 
         public void Start()
         {
+            string url;
             if (_ui.Config.CustomCamera) // check for custom camera url
             {
                 // allow users to use placeholders for the IP
-                var url = _ui.Config.CustomCameraUrl.Replace("{IpAddress}", _ui.PrinterClient.IpAddress);
-                _ui.MjpegStream = new MJPEGStream(url);
+                url = _ui.Config.CustomCameraUrl.Replace("{IpAddress}", _ui.PrinterClient.IpAddress);
                 Console.WriteLine("Using custom camera url: " + url);
             }
-            else
-            {
-                _ui.MjpegStream =
-                    new MJPEGStream(
-                        $"http://{_ui.PrinterClient.IpAddress}:8080/?action=stream"); // default for the 5M pro
-            }
-
+            else url = $"http://{_ui.PrinterClient.IpAddress}:8080/?action=stream";
+            
+            _ui.MjpegStream = new MJPEGStream(url);
             _ui.MjpegStream.NewFrame += MJPEGStream_NewFrame;
             _ui.MjpegStream.VideoSourceError += MJPEGStream_VideoSourceError;
             _ui.MjpegStream.Start();
+            
+            StartFrameMonitor();
+        }
+
+        private void StartFrameMonitor()
+        {
+            _lastFrameTime.Start();
+            _cts = new CancellationTokenSource();
+            _ct = _cts.Token;
+            FrameMonitor();
+        }
+
+        private void StopFrameMonitor()
+        {
+            _cts.Cancel();
+            _lastFrameTime.Reset();
+        }
+        
+
+        private void FrameMonitor()
+        {
+            Task.Run(async () => 
+            {
+                while (!_ct.IsCancellationRequested)
+                {
+                    if (_lastFrameTime.ElapsedMilliseconds > 5000)
+                    {
+                        Console.WriteLine("Mjpeg frame took longer than 5s, timed out.");
+                        StopFrameMonitor();
+                        StopError();
+                    }
+                    await Task.Delay(50);
+                }
+            });
         }
 
         public bool IsRunning()
@@ -56,7 +93,8 @@ namespace FlashForgeUI.ui.main.manager.camera
                 _ui.MjpegStream.Stop();
                 _ui.MjpegStream = null;
             }
-
+            
+            StopFrameMonitor();
             _camHelper.ResetPreview();
         }
 
@@ -64,6 +102,7 @@ namespace FlashForgeUI.ui.main.manager.camera
         {
             var frame = (Bitmap)eventArgs.Frame.Clone();
             _lastFrame = frame;
+            _lastFrameTime.Restart();
 
             _camHelper.SetFrame(frame);
         }
@@ -73,9 +112,15 @@ namespace FlashForgeUI.ui.main.manager.camera
             _ui.AppendLog($"Video source error: {eventArgs.Description}");
             _mjpegStreamErrors++;
             if (_mjpegStreamErrors < 3) return;
-            Stop();
-            _ui.toggleWebcamButton.Text = "Preview On";
+            StopError();
+        }
+
+        private void StopError()
+        {
+            Utils.SetButtonText(_ui.toggleWebcamButton, "Preview On");
             _ui.AppendLog("Preview stopped due to connection issue");
+            _mjpegStreamErrors = 0;
+            Stop();
         }
 
         public async Task<Bitmap> GetSingleFrameAsync()

@@ -60,24 +60,25 @@
     </div>
     <div class="button-block">
         <button id="toggleWebcam" onclick="toggleWebcam()">Toggle Webcam</button>
-        <button onclick='sendCommand("pauseJob")'>Pause Job</button>
-        <button onclick='sendCommand("resumeJob")'>Resume Job</button>
-        <button onclick='sendCommand("stopJob")'>Stop Job</button>
-        <button onclick='sendCommand("homeAxes")'>Home Axes</button>
-        <button onclick='promptForValue("setCoolingFanSpeed", "Set Cooling Fan Speed (0-100)", "speed")'>Set Cooling Fan</button>
+        <button id="pauseJob" onclick='sendCommand("pauseJob")'>Pause Job</button>
+        <button id="resumeJob" onclick='sendCommand("resumeJob")'>Resume Job</button>
+        <button id="stopJob" onclick='sendCommand("stopJob")'>Stop Job</button>
+        <button id="homeAxes" onclick='sendCommand("homeAxes")'>Home Axes</button>
+        <button id="clearStatus" onclick='sendCommand("clearStatus")'>Clear Status</button>
+        <button id="setCoolingFanSpeed" onclick='promptForValue("setCoolingFanSpeed", "Set Cooling Fan Speed (0-100)", "speed")'>Set Cooling Fan</button>
         <button id="setChamberFanSpeed" onclick='promptForValue("setChamberFanSpeed", "Set Chamber Fan Speed (0-100)", "speed")'>Set Chamber Fan</button>
-        <button onclick='promptForValue("setBedTemp", "Set Bed Temperature (max 100°C)", "temp")'>Set Bed Temp</button>
-        <button onclick='promptForValue("setExtruderTemp", "Set Extruder Temperature (max 280°C)", "temp")'>Set Extruder Temp</button>
-        <button onclick='promptForValue("setZAxisOffset", "Set Z Axis Offset", "offset")'>Set Z Axis Offset</button>
+        <button id="setBedTemp" onclick='promptForValue("setBedTemp", "Set Bed Temperature (max 100°C)", "temp")'>Set Bed Temp</button>
+        <button id="setExtruderTemp" onclick='promptForValue("setExtruderTemp", "Set Extruder Temperature (max 280°C)", "temp")'>Set Extruder Temp</button>
+        <button id="setZAxisOffset" onclick='promptForValue("setZAxisOffset", "Set Z Axis Offset", "offset")'>Set Z Axis Offset</button>
         <button id="setLedOn" onclick='sendCommand("turnLedOn")'>Turn LED On</button>
         <button id="setLedOff" onclick='sendCommand("turnLedOff")'>Turn LED Off</button>
-        <button onclick='sendCommand("cancelBedHeating")'>Cancel Bed Heating</button>
-        <button onclick='sendCommand("cancelExtruderHeating")'>Cancel Extruder Heating</button>
+        <button id="cancelBedTemp" onclick='sendCommand("cancelBedHeating")'>Cancel Bed Heating</button>
+        <button id="cancelExtruderTemp" onclick='sendCommand("cancelExtruderHeating")'>Cancel Extruder Heating</button>
         <button id="setExternalFiltration" onclick='sendCommand("setExternalFiltrationOn")'>External Filtration On</button>
         <button id="setInternalFiltration" onclick='sendCommand("setInternalFiltrationOn")'>Internal Filtration On</button>
         <button id="setFiltrationOff" onclick='sendCommand("setFiltrationOff")'>Filtration Off</button>
-        <button onclick='showFileSelection("recent")'>Start Recent Job</button>
-        <button onclick='showFileSelection("local")'>Start Local Job</button>
+        <button id="startRecentJob" onclick='showFileSelection("recent")'>Start Recent Job</button>
+        <button id="startLocalJob" onclick='showFileSelection("local")'>Start Local Job</button>
     </div>
     <div id="log">
         <p><strong>Log:</strong></p>

@@ -16,6 +16,22 @@ namespace FlashForgeUI.program.util
         [DefaultValue(false)]
         public bool AlwaysOnTop { get; set; }
         
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(false)]
+        public bool AlertWhenComplete { get; set; }
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(false)]
+        public bool AlertWhenCooled { get; set; }
+        
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(true)]
+        public bool AudioAlerts { get; set; }
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(true)]
+        public bool VisualAlerts { get; set; }
         
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
@@ -43,6 +59,10 @@ namespace FlashForgeUI.program.util
                 WebUi = false;
                 DiscordSync = false;
                 AlwaysOnTop = false;
+                AlertWhenComplete = false;
+                AlertWhenCooled = false;
+                AudioAlerts = false;
+                VisualAlerts = true;
                 DebugMode = false;
                 WebhookUrl = "";
                 CustomCamera = false;

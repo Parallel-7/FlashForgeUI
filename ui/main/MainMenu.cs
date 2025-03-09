@@ -1,8 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,46 +8,32 @@ using AForge.Video;
 using FiveMApi.api;
 using FlashForgeUI.manager;
 using FlashForgeUI.program.util;
+using FlashForgeUI.ui.main.dialog;
 using FlashForgeUI.ui.main.manager;
 using FlashForgeUI.ui.main.manager.camera;
 using FlashForgeUI.ui.main.util;
 using FlashForgeUI.webui;
-using Microsoft.VisualBasic;
 
 namespace FlashForgeUI.ui.main
 {
     public partial class MainMenu : Form
     {
-        // todo revert the custom listview (for log) back to standard win forms
-        // and theme accordingly if we cannot get the scroll to bottom to work
-        // it does look nicer though.
         
         internal MJPEGStream MjpegStream;
-
         public FiveMClient PrinterClient;
 
         internal PrinterWebServer WebServer;
-
         internal WebhookHelper Webhook;
-
         internal Config Config;
+        internal string LastJobName;
         
-        
-        // Managers
-        private ConnectionManager _connectionManager;
+        internal ConnectionManager ConnectionManager;
         private StatusTimerManager _statusTimerManager;
-        
         internal MjpegStreamManager MjpegStreamManager;
         internal ButtonManager ButtonManager;
-
-        private UiHelper _uiHelper;
+        internal InteractionManager InteractionManager;
+        internal UiHelper UiHelper;
         
-        
-        public MjpegStreamManager GetCameraStreamManager()
-        { // for WebhookHelper (sending preview image to discord)
-            return MjpegStreamManager;
-        }
-
         internal bool IsConnected;
 
         public MainMenu()
@@ -85,7 +68,6 @@ namespace FlashForgeUI.ui.main
             timerStatusUpdate.Start();
             timerSyncInfo.Start();
             if (Config.DiscordSync) timerSyncDiscord.Start();
-            if (PrinterClient.IsPro || Config.CustomCamera && !string.IsNullOrEmpty(Config.CustomCameraUrl)) ButtonManager.PreviewOn();
         }
 
         private void StartWebUi()
@@ -94,29 +76,6 @@ namespace FlashForgeUI.ui.main
             WebServer.Start();
         }
 
-        private void CheckFeatures()
-        {
-            if (!Compat.Is313OrAbove(PrinterClient.FirmVer))
-            {
-                AppendLog("This printer is running older firmware, some features may not be available, or work as intended. " +
-                          "Please update to the latest firmware when possible for better compatibility");
-                clearPlatformButton.Visible = false;
-            }
-            
-            if (!PrinterClient.LedControl)
-            {
-                AppendLog("LEDs are not equipped or properly configured on this printer.");
-                ledOffButton.Visible = false;
-                ledOnButton.Visible = false;
-            }
-
-            if (PrinterClient.FiltrationControl) return;
-            AppendLog("Filtration control is not available for this printer.");
-            filtrationPanel.Visible = false;
-            setChamberFanButton.Visible = false;
-            chamberFanLabel.Visible = false;
-        }
-        
         
         // Timer Events
         private async void timerSyncDiscord_Tick(object sender, EventArgs e)
@@ -140,29 +99,24 @@ namespace FlashForgeUI.ui.main
         
         internal void AppendLog(string message)
         {
-            Debug.WriteLine($"AppendLog called: {message}");
-    
-            if (logBox.InvokeRequired) logBox.Invoke(new Action(() => AddLogMessage(message)));
-            else AddLogMessage(message);
-        }
-
-        private void AddLogMessage(string message)
-        {
-            try
+            logBox.Invoke(new Action(() =>
             {
-                var timeStampedMessage = $"{DateTime.Now:HH:mm:ss} - {message}";
-                var currentItems = logBox.Items.ToList();
-                currentItems.Add(timeStampedMessage);
-                logBox.Items = currentItems.ToArray();
-                logBox.SelectedIndex = logBox.Items.Length - 1;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error adding log message: {ex}");
-            }
+                try
+                {
+                    var timeStampedMessage = $"{DateTime.Now:HH:mm:ss} - {message}";
+                    var currentItems = logBox.Items.ToList();
+                    currentItems.Add(timeStampedMessage);
+                    logBox.Items = currentItems.ToArray();
+                    logBox.SelectedIndex = logBox.Items.Length - 1;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error adding log message: {ex}");
+                }
+            }));
         }
         
-        private async Task<bool> CheckJobReady()
+        internal async Task<bool> CheckJobReady()
         {
             var info = await PrinterClient.Info.Get();
             switch (info.Status)
@@ -184,73 +138,8 @@ namespace FlashForgeUI.ui.main
             return false;
         }
         
-        private string _lastJobFileName;
+        
 
-        internal async Task UpdateModelPreview(string currentJobFileName)
-        { // todo possibly relocate to UiHelper?
-            if (!string.IsNullOrEmpty(currentJobFileName))
-            {
-                if (currentJobFileName != _lastJobFileName)
-                {
-                    _lastJobFileName = currentJobFileName;
-
-                    // Fetch the thumbnail
-                    var thumbnailBytes = await PrinterClient.Files.GetGCodeThumbnail(currentJobFileName);
-                    if (thumbnailBytes != null && thumbnailBytes.Length > 0)
-                    {
-                        using (var ms = new MemoryStream(thumbnailBytes))
-                        {
-                            var image = Image.FromStream(ms);
-                            if (modelPreviewImg.InvokeRequired)
-                            {
-                                modelPreviewImg.Invoke(new Action(() =>
-                                {
-                                    modelPreviewImg.Image?.Dispose();
-                                    modelPreviewImg.Image = image;
-                                }));
-                            }
-                            else
-                            {
-                                modelPreviewImg.Image?.Dispose();
-                                modelPreviewImg.Image = image;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Thumbnail not available, clear the image
-                        ClearModelPreviewImage();
-                    }
-                }
-                // If the job hasn't changed, do nothing
-            }
-            else
-            {
-                // No current job, clear the image
-                if (_lastJobFileName != null)
-                {
-                    _lastJobFileName = null;
-                    ClearModelPreviewImage();
-                }
-            }
-        }
-
-        internal void ClearModelPreviewImage()
-        {
-            if (modelPreviewImg.InvokeRequired)
-            {
-                modelPreviewImg.Invoke(new Action(() =>
-                {
-                    modelPreviewImg.Image?.Dispose();
-                    modelPreviewImg.Image = null;
-                }));
-            }
-            else
-            {
-                modelPreviewImg.Image?.Dispose();
-                modelPreviewImg.Image = null;
-            }
-        }
 
         private readonly SemaphoreSlim CmdButtonSemaphore = new SemaphoreSlim(1, 1);
 
@@ -264,7 +153,7 @@ namespace FlashForgeUI.ui.main
             CmdButtonSemaphore.Release();
         }
 
-        private async Task<bool> CmdBusy()
+        internal async Task<bool> CmdBusy()
         {
             var isBusy = !await CmdButtonSemaphore.WaitAsync(0);
             if (isBusy) return true;
@@ -272,81 +161,52 @@ namespace FlashForgeUI.ui.main
             return false;
         }
         
-        
-        
-        // WebUI helper code
-
-        public dynamic GetPrinterStatus()
-        {
-            if (InvokeRequired)
-            {
-                return Invoke(new Func<dynamic>(GetPrinterStatus));
-            }
-
-            return new
-            {
-                isPro = PrinterClient.IsPro,
-                currentJob = currentJobLabel.Text,
-                eta = etaLabel.Text,
-                extruderTemp = extruderTempLabel.Text,
-                bedTemp = bedTempLabel.Text,
-                progress = progressLabel.Text,
-                filamentUsed = totalFilamentLabel.Text,
-                totalRunTime = totalRunTimeLabel.Text,
-                printerStatus = printerStatusLabel.Text,
-                layerInfo = layerLabel.Text,
-                weight = weightLabel.Text,
-                length = lengthLabel.Text,
-                coolingFanSpeed = coolingFanLabel.Text,
-                chamberFanSpeed = chamberFanLabel.Text,
-                filtrationStatus = filterModeLabel.Text
-            };
-        }
-        
-        // todo don't forget about filament swap button click
-        
-        
-        
         // Events 
         
         internal async void MainMenu_Shown(object sender, EventArgs e)
         {
-            // load config
-            Config = new Config().Load();
-            
-            _uiHelper = new UiHelper(this);
-            if (Config.AlwaysOnTop) _uiHelper.SetOnTop();
+            Init();
 
-            // init managers
-            _connectionManager = new ConnectionManager(this);
+            // test new dialog + sound setting
+            var test = new GenericDialog("test", "test", "test", this);
+            test.Show();
             
-            _statusTimerManager = new StatusTimerManager(this, _uiHelper);
-            
-            
-            ButtonManager = new ButtonManager(this);
-            MjpegStreamManager = new MjpegStreamManager(this);
-            
-            
-            // only show console window if in debug mode
-            if (Config.DebugMode) Program.AllocConsole();
-
             IsConnected = await Connect();
         }
 
+        private void Init()
+        {
+            Config = new Config().Load(); // load config
+            UiHelper = new UiHelper(this);
+            
+            if (Config.AlwaysOnTop) UiHelper.SetOnTop(); // apply always on top to main window
+            if (Config.DebugMode) Program.AllocConsole(); // allocate console if in debug mode
+            
+            ButtonManager = new ButtonManager(this);
+            MjpegStreamManager = new MjpegStreamManager(this);
+            InteractionManager = new InteractionManager(this);
+            
+            ConnectionManager = new ConnectionManager(this);
+            _statusTimerManager = new StatusTimerManager(this);
+        }
+        
+
         internal async Task<bool> Connect()
         {
-            var connected = await _connectionManager.FindPrinterAndConnect();
+            var connected = await ConnectionManager.FindPrinterAndConnect();
             if (connected)
             {
                 AppendLog($"Connected to {PrinterClient.PrinterName} @ {PrinterClient.IpAddress}");
                 AppendLog($"Firmware version: {PrinterClient.FirmwareVersion}");
 
-                CheckFeatures();
+                UiHelper.CheckFeatures();
                 
-                if (Config.DiscordSync) InitWebhook(); // only check/enable the webhook if the user actually enabled it.
-                StartTimers();
+                if (Config.DiscordSync) InitWebhook(); // init discord sync and/or web UI
                 if (Config.WebUi) StartWebUi();
 
+                if (PrinterClient.IsPro || Config.CustomCamera && !string.IsNullOrEmpty(Config.CustomCameraUrl)) ButtonManager.PreviewOn(); // start preview
+                
+                StartTimers();
                 return true;
             }
 
@@ -391,18 +251,7 @@ namespace FlashForgeUI.ui.main
 
         private async void homeAxesButton_Click(object sender, EventArgs e)
         {
-            if (!await CheckJobReady()) return;
-            if (await CmdBusy())
-            {
-                MessageBox.Show("Printer is busy.");
-                return;
-            }
-
-            await CmdWait();
-            AppendLog("Homing axes");
-            var homed = await PrinterClient.Control.HomeAxes();
-            AppendLog(homed ? "Homed." : "Error homing axes.");
-            CmdRelease();
+            await InteractionManager.HandleHomeAxes();
         }
 
         private async void uploadJobButton_Click(object sender, EventArgs e)
@@ -435,82 +284,22 @@ namespace FlashForgeUI.ui.main
 
         private async void setBedTempButton_Click(object sender, EventArgs e)
         {
-            if (await CmdBusy())
-            {
-                MessageBox.Show("Printer is busy.");
-                return;
-            }
-
-            var input = Interaction.InputBox("Bed temp (max 100)", "Set Bed Temperature", "0");
-            if (int.TryParse(input, out var temp))
-            {
-                if (temp > 100) MessageBox.Show("Cannot set above 100C!");
-                else
-                {
-                    await CmdWait();
-                    if (await PrinterClient.TempControl.SetBedTemp(temp)) AppendLog($"Bed temp set to {temp}C");
-                    else AppendLog("Unable to set bed temp!!");
-                    CmdRelease();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid input.", "Cancelled");
-            }
+            await InteractionManager.HandleSetBedTemp();
         }
 
         private async void disableBedHeatButton_Click(object sender, EventArgs e)
         {
-            if (await CmdBusy())
-            {
-                MessageBox.Show("Printer is busy.");
-                return;
-            }
-
-            await CmdWait();
-            if (!await PrinterClient.TempControl.CancelBedTemp()) AppendLog("Unable to turn off bed heating!!");
-            else AppendLog("Bed heating disabled.");
-            CmdRelease();
+            await InteractionManager.HandleCancelBedTemp();
         }
 
         private async void setExtruderTempButton_Click(object sender, EventArgs e)
         {
-            if (await CmdBusy())
-            {
-                MessageBox.Show("Printer is busy.");
-                return;
-            }
-
-            var input = Interaction.InputBox("Extruder temp (max 280)", "Set Extruder Temperature", "0");
-            if (int.TryParse(input, out var temp))
-            {
-                if (temp > 280) MessageBox.Show("Cannot set above 280C!");
-                else
-                {
-                    await CmdWait();
-                    if (await PrinterClient.TempControl.SetExtruderTemp(temp)) AppendLog($"Extruder temp set to {temp}C");
-                    else AppendLog("Unable to set extruder temp!!");
-                    CmdRelease();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid input.", "Cancelled");
-            }
+            await InteractionManager.HandleSetExtruderTemp();
         }
 
         private async void disableExtruderHeatButton_Click(object sender, EventArgs e)
         {
-            if (await CmdBusy())
-            {
-                MessageBox.Show("Printer is busy.");
-                return;
-            }
-
-            await CmdWait();
-            if (!await PrinterClient.TempControl.CancelExtruderTemp()) AppendLog("Unable to turn off extruder heat!!");
-            else AppendLog("Extruder heating disabled.");
-            CmdRelease();
+            await InteractionManager.HandleCancelExtruderTemp();
         }
 
         private async void externalFiltrationButton_Click(object sender, EventArgs e)
@@ -550,6 +339,8 @@ namespace FlashForgeUI.ui.main
 
         private async void clearPlatformButton_Click(object sender, EventArgs e)
         {
+            currentJobLabel.Text = "Current Job: None";
+            LastJobName = "cleared";
             await ButtonManager.ClearPlatform();
         }
 

@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using FlashForgeUI.ui.main.dialog;
 using ReaLTaiizor.Controls;
 
 namespace FlashForgeUI.ui.main.util
@@ -98,6 +102,125 @@ namespace FlashForgeUI.ui.main.util
             _ui.setBedTempButton.Visible = true;
             _ui.disableExtruderHeatButton.Visible = true;
             _ui.setExtruderTempButton.Visible = true;
+        }
+
+        private void SetPreviewImg(byte[] imageBytes)
+        {
+            using (var ms = new MemoryStream(imageBytes))
+            {
+                var image = Image.FromStream(ms);
+                _ui.modelPreviewImg.BeginInvoke(new Action(() =>
+                {
+                    _ui.modelPreviewImg.Image?.Dispose();
+                    _ui.modelPreviewImg.Image = image;
+                }));
+            }
+        }
+        
+        public async Task UpdateModelPreview(string currentJobFileName)
+        {
+            if (!string.IsNullOrEmpty(currentJobFileName))
+            {
+                if (currentJobFileName != _ui.LastJobName)
+                {
+                    _ui.LastJobName = currentJobFileName;
+
+                    // Fetch the thumbnail
+                    var thumbnailBytes = await _ui.PrinterClient.Files.GetGCodeThumbnail(currentJobFileName);
+                    
+                    if (thumbnailBytes != null && thumbnailBytes.Length > 0) SetPreviewImg(thumbnailBytes);
+                    else ClearModelPreviewImage();
+                }
+                // If the job hasn't changed, do nothing
+            }
+            else
+            {
+                // No current job, clear the image
+                if (_ui.LastJobName != null)
+                {
+                    _ui.LastJobName = null;
+                    ClearModelPreviewImage();
+                }
+            }
+        }
+        
+        
+        internal void ClearModelPreviewImage()
+        {
+            _ui.modelPreviewImg.BeginInvoke(new Action(() =>
+            {
+                _ui.modelPreviewImg.Image?.Dispose();
+                _ui.modelPreviewImg.Image = null;
+            }));
+        }
+        
+        public void CheckFeatures()
+        {
+            if (!Compat.Is313OrAbove(_ui.PrinterClient.FirmVer))
+            {
+                _ui.AppendLog("This printer is running older firmware, some features may not be available, or work as intended. " +
+                              "Please update to the latest firmware when possible for better compatibility");
+                _ui.clearPlatformButton.Visible = false;
+            }
+            
+            if (!_ui.PrinterClient.LedControl)
+            {
+                _ui.AppendLog("LEDs are not equipped or properly configured on this printer.");
+                _ui.ledOffButton.Visible = false;
+                _ui.ledOnButton.Visible = false;
+            }
+
+            if (_ui.PrinterClient.FiltrationControl) return;
+            _ui.AppendLog("Filtration control is not available for this printer.");
+            _ui.filtrationPanel.Visible = false;
+            _ui.setChamberFanButton.Visible = false;
+            _ui.chamberFanLabel.Visible = false;
+        }
+        
+        
+        
+        public dynamic GetPrinterStatusJson()
+        {
+
+            return new
+            {
+                isPro = _ui.PrinterClient.IsPro,
+                currentJob = _ui.currentJobLabel.Text,
+                eta = _ui.etaLabel.Text,
+                extruderTemp = _ui.extruderTempLabel.Text,
+                bedTemp = _ui.bedTempLabel.Text,
+                progress = _ui.progressLabel.Text,
+                filamentUsed = _ui.totalFilamentLabel.Text,
+                totalRunTime = _ui.totalRunTimeLabel.Text,
+                printerStatus = _ui.printerStatusLabel.Text,
+                layerInfo = _ui.layerLabel.Text,
+                weight = _ui.weightLabel.Text,
+                length = _ui.lengthLabel.Text,
+                coolingFanSpeed = _ui.coolingFanLabel.Text,
+                chamberFanSpeed = _ui.chamberFanLabel.Text,
+                filtrationStatus = _ui.filterModeLabel.Text,
+                firmwareVersion = _ui.PrinterClient.FirmwareVersion
+            };
+        }
+
+        private GenericDialog MakeDialog(string windowTitle, string title, string text)
+        {
+            return new GenericDialog(windowTitle, title, text, _ui);
+        }
+        
+        public void ShowDialog(string windowTitle, string title, string text, bool async)
+        {
+            var dialog = MakeDialog(windowTitle, title, text);
+            if (async)
+            {
+                // changed to Show to prevent the default sound 
+                // might have unexpected side affects
+                Task.Run(() =>
+                {
+                    dialog.Show();
+                });
+            }
+            else dialog.Show();
         }
         
         

@@ -3,10 +3,12 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FiveMApi.api;
+using FlashForgeUI.ui.main.dialog;
 using FlashForgeUI.ui.main.util;
 
 namespace FlashForgeUI.ui.main.manager
 {
+    // todo still needs this recode...
     // todo full review and potential recode/rewrite
     // at least one long standing bug is still present , i think with resetting the state after the part is cooled?
     public class StatusTimerManager
@@ -14,10 +16,10 @@ namespace FlashForgeUI.ui.main.manager
         private readonly MainMenu _ui;
         private readonly UiHelper _uiHelper;
 
-        public StatusTimerManager(MainMenu mainMenu, UiHelper helper)
+        public StatusTimerManager(MainMenu mainMenu)
         {
             _ui = mainMenu;
-            _uiHelper = helper;
+            _uiHelper = _ui.UiHelper;
         }
 
 
@@ -37,6 +39,13 @@ namespace FlashForgeUI.ui.main.manager
             if (status.Equals("completed") && !_completionFlag)
             {
                 if (DiscordSyncEnabled()) await _ui.Webhook.SendMessage("Completed job: " + machineInfo.PrintFileName);
+                
+                if (_ui.Config.VisualAlerts)
+                {
+                    new GenericDialog("Print Complete!", "Print completed",
+                        machineInfo.PrintFileName + " has finished printing!", _ui).Show();
+                }
+                
                 _completionFlag = true;
                 return;
             }
@@ -55,11 +64,18 @@ namespace FlashForgeUI.ui.main.manager
             {
                 _completionCooledFlag = true;
                 if (DiscordSyncEnabled()) await _ui.Webhook.SendMessage("Ready for removal: " + machineInfo.PrintFileName);
-                MessageBox.Show(machineInfo.PrintFileName + " ready for removal!", "Print Complete!");
+
+                if (_ui.Config.VisualAlerts)
+                {
+                    new GenericDialog("Print Complete!", "Print ready for removal",
+                        machineInfo.PrintFileName + " is ready for removal!", _ui).ShowDialog();
+                }
+                
+                //MessageBox.Show(machineInfo.PrintFileName + " ready for removal!", "Print Complete!");
             }
         }
         
-        private async Task TickStatusChange(FiveMClient.MachineInfo machineInfo)
+        private async Task CheckStatusChange(FiveMClient.MachineInfo machineInfo)
         {
             var statusChanged = _lastStatus == null || _lastStatus != machineInfo.Status;
 
@@ -72,29 +88,12 @@ namespace FlashForgeUI.ui.main.manager
             await CheckPartCool(machineInfo, machineInfo.Status);
         }
         
-        private void SetActiveJobControls(bool active)
-        {
-            if (active)
-            {
-                _uiHelper.ShowJobRequiredControls();
-                _uiHelper.HideJobInterferingControls();
-
-            }
-            else
-            {
-                _uiHelper.HideJobRequiredControls();
-                _uiHelper.ShowJobInterferingControls();
-            }
-        }
-        
-        
-        private void SetPrinting(FiveMClient.MachineInfo machineInfo)
+        private void SetPrintingInfo(FiveMClient.MachineInfo machineInfo)
         {
             _ui.etaLabel.Text = $"ETA: {machineInfo.CompletionTime.ToString("h:mm tt")} ({machineInfo.PrintEta})";
             _ui.currentJobLabel.Text = string.IsNullOrEmpty(machineInfo.PrintFileName)
                 ? "Current Job: Error"
                 : $"Current Job: {machineInfo.PrintFileName}";
-            SetActiveJobControls(true);
         }
 
         private void SetJobComplete(FiveMClient.MachineInfo machineInfo)
@@ -108,45 +107,50 @@ namespace FlashForgeUI.ui.main.manager
 
         private void SetEtaAndJobControls(FiveMClient.MachineInfo machineInfo)
         {
-            // todo this needs to be refactored to use MachineState
-            switch (machineInfo.Status)
+            var state = machineInfo.MachineState;
+
+            if (state == MachineState.Printing) SetPrintingInfo(machineInfo); 
+            
+            switch (state)
             {
-                case "cancel":
-                case "completed":
-                    SetJobComplete(machineInfo); // update UI
-                    SetActiveJobControls(true); // show controls hidden during printing (will prompt to clear the bed first if not)
-                    //_ui.labelCurrentJob.Text = "Current Job: None";
+                case MachineState.Busy:
+                case MachineState.Calibrating:
+                case MachineState.Error:
+                case MachineState.Heating:
+                case MachineState.Unknown:    
+                    _uiHelper.HideJobRequiredControls();
+                    _uiHelper.HideJobInterferingControls();
                     break;
-                case "ready":
-                    SetActiveJobControls(false);
-                    //_ui.labelCurrentJob.Text = "Current Job: None";
+                case MachineState.Paused:
+                case MachineState.Pausing:
+                case MachineState.Printing:
+                    _uiHelper.HideJobInterferingControls();
+                    _uiHelper.ShowJobRequiredControls();
                     break;
-                case "printing":
-                    SetPrinting(machineInfo);
-                    return;
-                case "busy": 
-                    SetActiveJobControls(true);
+                case MachineState.Ready:
+                    _uiHelper.ShowJobInterferingControls();
+                    _uiHelper.HideJobRequiredControls();
+                    break;
+                case MachineState.Cancelled:
+                case MachineState.Completed:
+                    SetJobComplete(machineInfo);
+                    _uiHelper.HideJobRequiredControls();
+                    _uiHelper.ShowJobInterferingControls();
                     break;
             }
         }
 
         private void SetTemps(FiveMClient.MachineInfo machineInfo)
         {
-            _ui.extruderTempLabel.Text =
-                $"Extruder: {machineInfo.ExtruderTemp.AsStr()} / {machineInfo.ExtruderSetTemp.AsStr()}";
-            //Console.WriteLine(_ui.extruderTempLabel.Text);
-            _ui.bedTempLabel.Text =
-                $"Bed: {machineInfo.PrintBedTemp.AsStr()} / {machineInfo.PrintBedSetTemp.AsStr()}";
+            _ui.extruderTempLabel.Text = Utils.FormatTemps("Extruder: ", machineInfo.ExtruderTemp, machineInfo.ExtruderSetTemp);
+            _ui.bedTempLabel.Text = Utils.FormatTemps("Bed: ", machineInfo.PrintBedTemp, machineInfo.PrintBedSetTemp);
         }
 
         private void SetGeneralInfo(FiveMClient.MachineInfo machineInfo)
         {
-            _ui.totalFilamentLabel.Text = $"Filament used: {_ui.PrinterClient.LifetimeFilamentMeters}";
-            //Console.WriteLine(_ui.totalFilamentLabel.Text);
-            _ui.totalRunTimeLabel.Text = $"Run time: {_ui.PrinterClient.LifetimePrintTime}";
-            _ui.printerStatusLabel.Text = $"Printer: {machineInfo.Status}";
-            // removed because this is just in the firmware but does nothing (the printer doesn't know if the door is opened or closed)
-            //_ui.doorStatusLabel.Text = machineInfo.DoorOpen ? "Door Status: Open" : "Door Status: Closed";
+            Utils.SetLabelText(_ui.totalFilamentLabel, $"Filament used: {_ui.PrinterClient.LifetimeFilamentMeters}");
+            Utils.SetLabelText(_ui.totalRunTimeLabel, $"Run time: {_ui.PrinterClient.LifetimePrintTime}");
+            Utils.SetLabelText(_ui.printerStatusLabel, $"Printer: {machineInfo.Status}");
         }
 
         private void SetAdvancedInfo(FiveMClient.MachineInfo machineInfo)
@@ -194,14 +198,13 @@ namespace FlashForgeUI.ui.main.manager
         {
             var progress = machineInfo.PrintProgressInt;
             _ui.progressLabel.Text = $"Progress: {progress}%";
-            if (_ui.poisonProgressBar1.InvokeRequired) _ui.poisonProgressBar1.Invoke(new Action(() => { _ui.poisonProgressBar1.Value = progress; }));
-            else _ui.poisonProgressBar1.Value = progress;
+            _ui.poisonProgressBar1.Invoke(new Action(() => { _ui.poisonProgressBar1.Value = progress; }));
         }
 
         private async Task SetModelPreview(FiveMClient.MachineInfo machineInfo)
         {
-            if (machineInfo.IsPrinting() || machineInfo.IsJobComplete()) await _ui.UpdateModelPreview(machineInfo.PrintFileName);
-            else _ui.ClearModelPreviewImage();
+            if (machineInfo.IsPrinting() || machineInfo.IsJobComplete()) await _uiHelper.UpdateModelPreview(machineInfo.PrintFileName);
+            else _uiHelper.ClearModelPreviewImage();
         }
         
         public async Task TickStatusUpdate()
@@ -210,7 +213,7 @@ namespace FlashForgeUI.ui.main.manager
             if (machineInfo != null)
             {
                 _statusUpdateFailures--;
-                await TickStatusChange(machineInfo); // status change
+                await CheckStatusChange(machineInfo); // status change
                 SetEtaAndJobControls(machineInfo);
                 SetTemps(machineInfo);
                 SetGeneralInfo(machineInfo);

@@ -137,10 +137,10 @@ namespace FlashForgeUI.ui.main
             this.mainWindow.MinimumSize = new System.Drawing.Size(100, 42);
             this.mainWindow.Name = "mainWindow";
             this.mainWindow.Padding = new System.Windows.Forms.Padding(0, 31, 0, 0);
-            this.mainWindow.Size = new System.Drawing.Size(816, 845);
+            this.mainWindow.Size = new System.Drawing.Size(816, 919);
             this.mainWindow.TabIndex = 0;
             this.mainWindow.Text = "FlashForge UI 1.0";
-            this.mainWindow.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Left;
+            this.mainWindow.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Center;
             this.mainWindow.TitleBarTextColor = System.Drawing.Color.Gainsboro;
             // 
             // connectButton
@@ -153,7 +153,7 @@ namespace FlashForgeUI.ui.main
             this.connectButton.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.connectButton.HoverTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(49)))), ((int)(((byte)(51)))));
             this.connectButton.InfoColor = System.Drawing.Color.FromArgb(((int)(((byte)(144)))), ((int)(((byte)(147)))), ((int)(((byte)(153)))));
-            this.connectButton.Location = new System.Drawing.Point(339, 5);
+            this.connectButton.Location = new System.Drawing.Point(12, 5);
             this.connectButton.Name = "connectButton";
             this.connectButton.PrimaryColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
             this.connectButton.Size = new System.Drawing.Size(108, 23);
@@ -174,7 +174,7 @@ namespace FlashForgeUI.ui.main
             this.settingsButton.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.settingsButton.HoverTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(49)))), ((int)(((byte)(51)))));
             this.settingsButton.InfoColor = System.Drawing.Color.FromArgb(((int)(((byte)(144)))), ((int)(((byte)(147)))), ((int)(((byte)(153)))));
-            this.settingsButton.Location = new System.Drawing.Point(563, 5);
+            this.settingsButton.Location = new System.Drawing.Point(126, 5);
             this.settingsButton.Name = "settingsButton";
             this.settingsButton.PrimaryColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
             this.settingsButton.Size = new System.Drawing.Size(108, 23);
@@ -220,6 +220,7 @@ namespace FlashForgeUI.ui.main
             // 
             // nightPanel2
             // 
+            this.nightPanel2.AutoSize = true;
             this.nightPanel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nightPanel2.Controls.Add(this.nightPanel3);
             this.nightPanel2.Controls.Add(this.logBox);
@@ -233,7 +234,7 @@ namespace FlashForgeUI.ui.main
             this.nightPanel2.Name = "nightPanel2";
             this.nightPanel2.RightSideColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.nightPanel2.Side = ReaLTaiizor.Controls.NightPanel.PanelSide.Left;
-            this.nightPanel2.Size = new System.Drawing.Size(792, 345);
+            this.nightPanel2.Size = new System.Drawing.Size(792, 419);
             this.nightPanel2.TabIndex = 5;
             // 
             // nightPanel3
@@ -353,7 +354,7 @@ namespace FlashForgeUI.ui.main
             this.logBox.SelectedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.logBox.SelectedIndex = 0;
             this.logBox.SelectedItem = "";
-            this.logBox.Size = new System.Drawing.Size(765, 139);
+            this.logBox.Size = new System.Drawing.Size(765, 205);
             this.logBox.TabIndex = 4;
             this.logBox.Text = "foreverListBox1";
             // 
@@ -715,6 +716,7 @@ namespace FlashForgeUI.ui.main
             // 
             // nightPanel1
             // 
+            this.nightPanel1.AutoSize = true;
             this.nightPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nightPanel1.Controls.Add(this.lengthLabel);
             this.nightPanel1.Controls.Add(this.weightLabel);
@@ -727,7 +729,7 @@ namespace FlashForgeUI.ui.main
             this.nightPanel1.Name = "nightPanel1";
             this.nightPanel1.RightSideColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.nightPanel1.Side = ReaLTaiizor.Controls.NightPanel.PanelSide.Left;
-            this.nightPanel1.Size = new System.Drawing.Size(147, 159);
+            this.nightPanel1.Size = new System.Drawing.Size(149, 159);
             this.nightPanel1.TabIndex = 4;
             // 
             // lengthLabel
@@ -787,6 +789,7 @@ namespace FlashForgeUI.ui.main
             // 
             // modelPreviewPanel
             // 
+            this.modelPreviewPanel.AutoSize = true;
             this.modelPreviewPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.modelPreviewPanel.Controls.Add(this.modelPreviewImg);
             this.modelPreviewPanel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
@@ -810,6 +813,7 @@ namespace FlashForgeUI.ui.main
             // 
             // controlPanel
             // 
+            this.controlPanel.AutoSize = true;
             this.controlPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.controlPanel.Controls.Add(this.clearPlatformButton);
             this.controlPanel.Controls.Add(this.sendCmdButton);
@@ -848,7 +852,7 @@ namespace FlashForgeUI.ui.main
             this.clearPlatformButton.Size = new System.Drawing.Size(108, 32);
             this.clearPlatformButton.SuccessColor = System.Drawing.Color.FromArgb(((int)(((byte)(103)))), ((int)(((byte)(194)))), ((int)(((byte)(58)))));
             this.clearPlatformButton.TabIndex = 14;
-            this.clearPlatformButton.Text = "Clear Platform";
+            this.clearPlatformButton.Text = "Clear Status";
             this.clearPlatformButton.TextColor = System.Drawing.Color.White;
             this.clearPlatformButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
             this.clearPlatformButton.Click += new System.EventHandler(this.clearPlatformButton_Click);
@@ -1086,6 +1090,7 @@ namespace FlashForgeUI.ui.main
             // 
             // webcamPanel
             // 
+            this.webcamPanel.AutoSize = true;
             this.webcamPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.webcamPanel.Controls.Add(this.toggleWebcamButton);
             this.webcamPanel.Controls.Add(this.poisonProgressBar1);
@@ -1203,7 +1208,7 @@ namespace FlashForgeUI.ui.main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(816, 845);
+            this.ClientSize = new System.Drawing.Size(816, 919);
             this.Controls.Add(this.mainWindow);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximumSize = new System.Drawing.Size(1920, 1040);
@@ -1212,6 +1217,7 @@ namespace FlashForgeUI.ui.main
             this.Text = "MainMenu";
             this.TransparencyKey = System.Drawing.Color.Fuchsia;
             this.mainWindow.ResumeLayout(false);
+            this.mainWindow.PerformLayout();
             this.nightPanel2.ResumeLayout(false);
             this.nightPanel3.ResumeLayout(false);
             this.filtrationPanel.ResumeLayout(false);

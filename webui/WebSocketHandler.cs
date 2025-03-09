@@ -91,7 +91,7 @@ namespace FlashForgeUI.webui
 
         private async Task SendStatus(WebSocket webSocket)
         {
-            var status = _ui.GetPrinterStatus();
+            var status = _ui.UiHelper.GetPrinterStatusJson();
             var statusMessage = new
             {
                 type = "status",
@@ -121,7 +121,7 @@ namespace FlashForgeUI.webui
 
         private async Task BroadcastStatus()
         {
-            var status = _ui.GetPrinterStatus();
+            var status = _ui.UiHelper.GetPrinterStatusJson();
             var statusMessage = new
             {
                 type = "status",
@@ -202,6 +202,8 @@ namespace FlashForgeUI.webui
 
             switch (cmdName)
             {
+                case "clearStatus":
+                    return await _serverBridge.ClearStatus();
                 case "pauseJob":
                     return await _serverBridge.PauseJob();
                 case "resumeJob":

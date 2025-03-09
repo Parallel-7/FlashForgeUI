@@ -62,13 +62,13 @@ namespace FlashForgeUI.manager
         public void PreviewOn()
         {
             _ui.MjpegStreamManager.Start();
-            _ui.toggleWebcamButton.Text = "Preview Off";
+            Utils.SetButtonText(_ui.toggleWebcamButton, "Preview Off");
         }
 
         public void PreviewOff()
         {
             _ui.MjpegStreamManager.Stop();
-            _ui.toggleWebcamButton.Text = "Preview On";
+            Utils.SetButtonText(_ui.toggleWebcamButton, "Preview On");
         }
         
         

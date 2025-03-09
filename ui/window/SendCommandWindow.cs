@@ -17,11 +17,7 @@ namespace FlashForgeUI
             
             Shown += (s, e) =>
             {
-                if (mainMenu.Config.AlwaysOnTop)
-                {
-                    var _uiHelper = new UiHelper(mainMenu);
-                    _uiHelper.SetOnTop(Handle);
-                }
+                if (mainMenu.Config.AlwaysOnTop) mainMenu.UiHelper.SetOnTop(Handle);
             };
             
             FormClosing += (s, e) => 
@@ -46,8 +42,7 @@ namespace FlashForgeUI
         
         private void AppendLog(string text)
         {
-            if (logBox.InvokeRequired) logBox.Invoke(new Action<string>(AppendLog), text);
-            else logBox.AppendText(text + Environment.NewLine);
+            logBox.Invoke(new Action<string>(AppendLog), text);
         }
     }
 }

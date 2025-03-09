@@ -99,10 +99,10 @@ namespace FlashForgeUI.webui
             catch (Exception e)
             {
                 Debug.WriteLine($"Unable to start web server: {e.Message}");
-                MessageBox.Show("Unable to start web server (for web UI), did you run as administrator?",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                _ui.UiHelper.ShowDialog("WebServer Error", 
+                    "Unable to start the webserver", 
+                    "Unable to start web server (for web UI), did you run as administrator?",
+                    true);
                 Running = false;
             }
         }

@@ -79,7 +79,7 @@ namespace FlashForgeUI.program.util
 
             var embed = new EmbedBuilder().WithTitle(printerClient.PrinterName + " status").WithColor(Colors.Orange);
 
-            var img = await mainMenu.GetCameraStreamManager().GetSingleFrameAsync();
+            var img = await mainMenu.MjpegStreamManager.GetSingleFrameAsync();
             
 
             var webcamPreview = await ImgBB.Upload(img, "preview.png");

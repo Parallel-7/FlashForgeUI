@@ -36,11 +36,7 @@ namespace FlashForgeUI
             
             Shown += (s, e) =>
             {
-                if (mainMenu.Config.AlwaysOnTop)
-                {
-                    var _uiHelper = new UiHelper(mainMenu);
-                    _uiHelper.SetOnTop(Handle);
-                }
+                if (mainMenu.Config.AlwaysOnTop) mainMenu.UiHelper.SetOnTop(Handle);
             };
             
             // the "default" NightControlBox just closes the application when exit is clicked..??

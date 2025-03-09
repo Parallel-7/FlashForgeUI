@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using RtspClientSharp.RawFrames;
 using RtspClientSharp.RawFrames.Video;
@@ -16,23 +18,14 @@ namespace FlashForgeUI.ui.main.manager.camera
         {
             _ui = mainMenu;
         }
-
-
+        
         public void SetFrame(Bitmap frame)
         {
-            if (_ui.webcamPictureBox.InvokeRequired)
+            _ui.webcamPictureBox.BeginInvoke(new MethodInvoker(() =>
             {
-                _ui.webcamPictureBox.BeginInvoke(new MethodInvoker(() =>
-                {
-                    ResetImg();
-                    _ui.webcamPictureBox.Image = frame;
-                }));
-            }
-            else
-            {
-                _ui.webcamPictureBox.Image?.Dispose();
                 ResetImg();
-            }
+                _ui.webcamPictureBox.Image = frame;
+            }));
         }
         
         public void ResetImg()

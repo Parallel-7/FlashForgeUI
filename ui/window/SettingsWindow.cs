@@ -9,19 +9,17 @@ namespace FlashForgeUI
     public partial class SettingsWindow : Form
     {
         private MainMenu _ui;
-        private readonly UiHelper _uiHelper; 
-        
+
         public SettingsWindow(MainMenu ui)
         {
             InitializeComponent();
             _ui = ui;
-            _uiHelper = new UiHelper(_ui);
-            
+
             LoadConfigToUI();
 
             Shown += (s, e) =>
             {
-                if (_ui.Config.AlwaysOnTop) _uiHelper.SetOnTop(Handle);
+                if (_ui.Config.AlwaysOnTop) _ui.UiHelper.SetOnTop(Handle);
             };
             
             FormClosing += (s, e) => 
@@ -66,6 +64,12 @@ namespace FlashForgeUI
             
             // always on top toggle
             alwaysOnTopCheck.Checked = _ui.Config.AlwaysOnTop;
+
+            audioAlertCheck.Checked = _ui.Config.AudioAlerts;
+            visualAlertCheck.Checked = _ui.Config.VisualAlerts;
+
+            alertWhenCooledCheck.Checked = _ui.Config.AlertWhenCooled;
+            alertWhenDoneCheck.Checked = _ui.Config.AlertWhenComplete;
         }
 
         private void webUICheck_CheckedChanged(object sender, EventArgs e)
@@ -80,7 +84,7 @@ namespace FlashForgeUI
             {
                 if (string.IsNullOrEmpty(customCameraBox.Text))
                 {
-                    MessageBox.Show("Please enter your camera's URL first!", "No camera URL");
+                    _ui.UiHelper.ShowDialog("Invalid camera URL", "Invalid camera URL!", "Please enter your camera URL before enabling", false);
                     return;
                 }
 
@@ -98,7 +102,7 @@ namespace FlashForgeUI
             {
                 if (string.IsNullOrEmpty(discordWebhookBox.Text))
                 {
-                    MessageBox.Show("Please enter your discord webhook first!", "No webhook URL");
+                    _ui.UiHelper.ShowDialog("Invalid webhook URL", "Invalid webhook URL!", "Please enter your webhook URL before enabling", false);
                     return;
                 }
 
@@ -119,6 +123,31 @@ namespace FlashForgeUI
         private void alwaysOnTopCheck_CheckedChanged(object sender, EventArgs e)
         {
             _ui.Config.AlwaysOnTop = alwaysOnTopCheck.Checked;
+            Save();
+        }
+
+        private void alertWhenDoneCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.Config.AlertWhenComplete = alertWhenDoneCheck.Checked;
+            Save();
+        }
+
+        private void alertWhenCooledCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.Config.AlertWhenCooled = alertWhenCooledCheck.Checked;
+            Save();
+        }
+
+
+        private void visualAlertCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.Config.VisualAlerts = visualAlertCheck.Checked;
+            Save();
+        }
+
+        private void audioAlertCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.Config.AudioAlerts = audioAlertCheck.Checked;
             Save();
         }
     }

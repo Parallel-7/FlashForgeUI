@@ -8,6 +8,7 @@ let connected = false;
 let config = null;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
+let currentStatus = ""
 
 function initializeWebSocket() {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -93,7 +94,7 @@ function handleConfigMessage(configData) {
 
 function handleStatusUpdate(status) {
     if (!status) return;
-
+    
     document.getElementById('currentJob').textContent = status.currentJob || 'Current Job';
     document.getElementById('eta').textContent = status.eta || '--';
     document.getElementById('progress').textContent = status.progress || '--';
@@ -107,6 +108,47 @@ function handleStatusUpdate(status) {
     document.getElementById('weight').textContent = status.weight || '--';
     document.getElementById('length').textContent = status.length || '--';
     document.getElementById('coolingFanSpeed').textContent = status.coolingFanSpeed || '--';
+    
+    currentStatus = status.printerStatus.replace("Printer: ", "")
+    
+    if (currentStatus === "printing" || currentStatus === "busy") 
+    {
+        // hide things you can't / shouldn't do while the printer is working
+        hideElement("homeAxes")
+        hideElement("startRecentJob")
+        hideElement("startLocalJob")
+        hideElement("setBedTemp")
+        hideElement("cancelBedTemp")
+        hideElement("setExtruderTemp")
+        hideElement("cancelExtruderTemp")
+        
+        // this and speed offset can only be sent while printing/busy
+        showElement("setZAxisOffset")
+        
+        showElement("pauseJob")
+        hideElement("resumeJob") // only show resume while paused
+        showElement("stopJob")
+    } else if (currentStatus === "paused") {
+        hideElement("pauseJob") // hide pause and show resume
+        showElement("resumeJob")
+    } else if (currentStatus === "completed" || currentStatus === "cancel" || currentStatus === "ready") {
+        // hide job controls (there is no active job)
+        hideElement("pauseJob")
+        hideElement("resumeJob")
+        hideElement("stopJob")
+        
+        // show things hidden before
+        showElement("homeAxes")
+        showElement("startRecentJob")
+        showElement("startLocalJob")
+        showElement("setBedTemp")
+        showElement("cancelBedTemp")
+        showElement("setExtruderTemp")
+        showElement("cancelExtruderTemp")
+        
+        // this and speed offset can only be sent while printing/busy
+        hideElement("setZAxisOffset")
+    }
 
     if (!nonProFlag && status.chamberFanSpeed !== undefined) {
         document.getElementById('chamberFanSpeed').textContent = status.chamberFanSpeed;
@@ -330,6 +372,13 @@ function hideElement(id) {
     const element = document.getElementById(id);
     if (element) {
         element.style.display = 'none';
+    }
+}
+
+function showElement(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.style.display = '';
     }
 }
 

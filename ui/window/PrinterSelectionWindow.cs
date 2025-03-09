@@ -24,8 +24,7 @@ namespace FlashForgeUI
             {
                 if (mainMenu.Config.AlwaysOnTop)
                 {
-                    var _uiHelper = new UiHelper(mainMenu);
-                    _uiHelper.SetOnTop(Handle);
+                    mainMenu.UiHelper.SetOnTop(Handle);
                 }
             };
             
