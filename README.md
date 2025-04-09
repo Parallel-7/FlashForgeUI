@@ -43,7 +43,7 @@
     - Notify on status changes
    
 # Compatibility
-- Full support for the 5M (Pro) [FW 2.7.8 - 3.1.3]
+- Full support for the 5M (Pro) [FW 2.7.8 - 3.1.5]
 - Support for any FlashForge printer with wifi capability is possible
 
 
