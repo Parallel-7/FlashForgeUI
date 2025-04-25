@@ -211,16 +211,18 @@ namespace FlashForgeUI.ui.main.util
         public void ShowDialog(string windowTitle, string title, string text, bool async)
         {
             var dialog = MakeDialog(windowTitle, title, text);
-            if (async)
-            {
+            // async is causing issues
+            //if (async)
+            //{
                 // changed to Show to prevent the default sound 
                 // might have unexpected side affects
-                Task.Run(() =>
-                {
-                    dialog.Show();
-                });
-            }
-            else dialog.Show();
+            //    Task.Run(() =>
+            //    {
+            //        dialog.Show();
+            //    });
+            //}
+            //else dialog.Show();
+            dialog.Show();
         }
         
         

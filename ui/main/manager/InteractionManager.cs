@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Forms;
+using FlashForgeUI.ui.main.util;
 using Microsoft.VisualBasic;
 
 namespace FlashForgeUI.ui.main.manager
@@ -39,23 +40,10 @@ namespace FlashForgeUI.ui.main.manager
                 return;
             }
             
-            // todo use new TempControlWindow
-            var input = Interaction.InputBox("Extruder temp (max 280)", "Set Extruder Temperature", "0");
-            if (int.TryParse(input, out var temp))
-            {
-                if (temp > 280) MessageBox.Show("Cannot set above 280C!");
-                else
-                {
-                    await _ui.CmdWait();
-                    if (await _ui.PrinterClient.TempControl.SetExtruderTemp(temp)) _ui.AppendLog($"Extruder temp set to {temp}C");
-                    else _ui.AppendLog("Unable to set extruder temp!!");
-                    _ui.CmdRelease();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid input.", "Cancelled");
-            }
+            await _ui.CmdWait();
+            var form = new TempControlWindow(_ui, "extruder");
+            await Utils.WaitForForm(form);
+            _ui.CmdRelease();
         }
 
         public async Task HandleCancelExtruderTemp()
@@ -79,24 +67,11 @@ namespace FlashForgeUI.ui.main.manager
                 MessageBox.Show("Printer is busy.");
                 return;
             }
-            
-            // todo use new temp control window
-            var input = Interaction.InputBox("Bed temp (max 100)", "Set Bed Temperature", "0");
-            if (int.TryParse(input, out var temp))
-            {
-                if (temp > 100) MessageBox.Show("Cannot set above 100C!");
-                else
-                {
-                    await _ui.CmdWait();
-                    if (await _ui.PrinterClient.TempControl.SetBedTemp(temp)) _ui.AppendLog($"Bed temp set to {temp}C");
-                    else _ui.AppendLog("Unable to set bed temp!!");
-                    _ui.CmdRelease();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid input.", "Cancelled");
-            }
+
+            await _ui.CmdWait();
+            var form = new TempControlWindow(_ui, "platform");
+            await Utils.WaitForForm(form);
+            _ui.CmdRelease();
         }
 
         public async Task HandleCancelBedTemp()

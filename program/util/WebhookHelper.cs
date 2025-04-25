@@ -58,6 +58,7 @@ namespace FlashForgeUI.program.util
 
         public async Task<bool> SendStatus(FiveMClient printerClient)
         {
+            // todo better state handling (paused, no job, etc.)
             Debug.WriteLine("WebhookHelper.SendStatus()");
             var embed = await CreatePrinterStatusEmbed(printerClient);
             if (embed == null) return false;
@@ -74,14 +75,9 @@ namespace FlashForgeUI.program.util
                 Debug.WriteLine("CreatePrinterStatusEmbed error, printerClient.Info.Get() returned null");
                 return null;
             }
-
-            if (machineInfo.IsPaused() || machineInfo.IsBusy() || machineInfo.IsReady()) return null; // no point in sending updates in these states
-
-            var embed = new EmbedBuilder().WithTitle(printerClient.PrinterName + " status").WithColor(Colors.Orange);
-
-            var img = await mainMenu.MjpegStreamManager.GetSingleFrameAsync();
             
-
+            var embed = new EmbedBuilder().WithTitle(printerClient.PrinterName + " status").WithColor(Colors.Orange);
+            var img = await mainMenu.MjpegStreamManager.GetSingleFrameAsync();
             var webcamPreview = await ImgBB.Upload(img, "preview.png");
             if (webcamPreview != null) embed.WithImage(webcamPreview);
             else Debug.WriteLine("CreatePrinterStatusEmbed failed to get webcam image");
@@ -120,8 +116,8 @@ namespace FlashForgeUI.program.util
 
             // Temperatures Section
             embed.AddField("Temperatures",
-                $"Bed: {Convert.ToInt32(machineInfo.PrintBedTemp)} / {Convert.ToInt32(machineInfo.PrintBedSetTemp)}C\n" +
-                $"Extruder: {Convert.ToInt32(machineInfo.ExtruderTemp)} / {Convert.ToInt32(machineInfo.ExtruderSetTemp)}C",
+                $"Bed: {machineInfo.PrintBedTemp.AsInt()} / {machineInfo.PrintBedSetTemp.AsInt()}C\n" +
+                $"Extruder: {machineInfo.ExtruderTemp.AsInt()} / {machineInfo.ExtruderSetTemp.AsInt()}C",
                 false);
 
             // Printer Offsets Section

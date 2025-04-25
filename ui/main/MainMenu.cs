@@ -67,7 +67,11 @@ namespace FlashForgeUI.ui.main
             timerSyncInfo_Tick(null, null);
             timerStatusUpdate.Start();
             timerSyncInfo.Start();
-            if (Config.DiscordSync) timerSyncDiscord.Start();
+            if (Config.DiscordSync)
+            {
+                timerSyncDiscord.Start();
+                timerSyncDiscord_Tick(null, null); // kick start before first timer elapses
+            }
         }
 
         private void StartWebUi()
@@ -80,7 +84,7 @@ namespace FlashForgeUI.ui.main
         // Timer Events
         private async void timerSyncDiscord_Tick(object sender, EventArgs e)
         {
-            Debug.Write("Ticking SyncDiscord");
+            Debug.WriteLine("Ticking SyncDiscord");
             await Webhook.SendStatus(PrinterClient); // todo handle result?
         }
         
@@ -166,11 +170,6 @@ namespace FlashForgeUI.ui.main
         internal async void MainMenu_Shown(object sender, EventArgs e)
         {
             Init();
-
-            // test new dialog + sound setting
-            var test = new GenericDialog("test", "test", "test", this);
-            test.Show();
-            
             IsConnected = await Connect();
         }
 

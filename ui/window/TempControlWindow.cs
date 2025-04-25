@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Media;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FiveMApi.api.misc;
@@ -27,6 +28,7 @@ namespace FlashForgeUI
             Shown += (s, e) =>
             {
                 if (_ui.Config.AlwaysOnTop) _ui.UiHelper.SetOnTop(Handle);
+                if (_ui.Config.AudioAlerts) SystemSounds.Exclamation.Play();
                 Init();
             };
             
@@ -46,6 +48,7 @@ namespace FlashForgeUI
         private void Init()
         {
             if (_mode.Equals("platform")) headerLabel.Text = "Platform";
+            else headerLabel.Text = "Extruder";
 
 
             _cts = new CancellationTokenSource();

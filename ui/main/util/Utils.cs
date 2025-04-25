@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using FiveMApi.api.misc;
 using ReaLTaiizor.Controls;
@@ -8,7 +9,18 @@ namespace FlashForgeUI.ui.main.util
     public class Utils
     {
 
-
+        // kinda hacky to avoid showDialog but same purpose minus sound
+        public static async Task WaitForForm(Form form)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            form.FormClosed += (sender, e) => 
+            {
+                tcs.SetResult(true);
+            };
+            form.Show();
+            await tcs.Task;
+        }
+        
         public static string FormatTemps(string text, Temperature current, Temperature set)
         {
             return $"{text}{FormatTemps(current, set)}";
