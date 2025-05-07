@@ -33,14 +33,16 @@ namespace FlashForgeUI.manager
         public async Task LedOn()
         {
             if (!Check()) return;
-            await _ui.PrinterClient.Control.SetLedOn();
+            if (_ui.Config.CustomLeds) await _ui.PrinterClient.TcpClient.LedOn();
+            else await _ui.PrinterClient.Control.SetLedOn();
             _ui.AppendLog("LED turned on.");
         }
 
         public async Task LedOff()
         {
             if (!Check()) return;
-            await _ui.PrinterClient.Control.SetLedOff();
+            if (_ui.Config.CustomLeds) await _ui.PrinterClient.TcpClient.LedOff();
+            else await _ui.PrinterClient.Control.SetLedOff();
             _ui.AppendLog("LED turned off.");
         }
         

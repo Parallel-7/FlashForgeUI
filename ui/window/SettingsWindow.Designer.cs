@@ -32,6 +32,7 @@ namespace FlashForgeUI
         private void InitializeComponent()
         {
             this.Settings = new ReaLTaiizor.Forms.NightForm();
+            this.customLedsCheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.audioAlertCheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.visualAlertCheck = new ReaLTaiizor.Controls.HopeCheckBox();
             this.alertWhenCooledCheck = new ReaLTaiizor.Controls.HopeCheckBox();
@@ -50,6 +51,7 @@ namespace FlashForgeUI
             // Settings
             // 
             this.Settings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(48)))), ((int)(((byte)(51)))));
+            this.Settings.Controls.Add(this.customLedsCheck);
             this.Settings.Controls.Add(this.audioAlertCheck);
             this.Settings.Controls.Add(this.visualAlertCheck);
             this.Settings.Controls.Add(this.alertWhenCooledCheck);
@@ -70,11 +72,31 @@ namespace FlashForgeUI
             this.Settings.MinimumSize = new System.Drawing.Size(100, 42);
             this.Settings.Name = "Settings";
             this.Settings.Padding = new System.Windows.Forms.Padding(0, 31, 0, 0);
-            this.Settings.Size = new System.Drawing.Size(553, 355);
+            this.Settings.Size = new System.Drawing.Size(553, 392);
             this.Settings.TabIndex = 0;
             this.Settings.Text = "Settings";
             this.Settings.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Left;
             this.Settings.TitleBarTextColor = System.Drawing.Color.Gainsboro;
+            // 
+            // customLedsCheck
+            // 
+            this.customLedsCheck.CheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.customLedsCheck.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.customLedsCheck.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(198)))), ((int)(((byte)(202)))));
+            this.customLedsCheck.DisabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(186)))), ((int)(((byte)(187)))), ((int)(((byte)(189)))));
+            this.customLedsCheck.Enable = true;
+            this.customLedsCheck.EnabledCheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(158)))), ((int)(((byte)(255)))));
+            this.customLedsCheck.EnabledStringColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
+            this.customLedsCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
+            this.customLedsCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.customLedsCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.customLedsCheck.Location = new System.Drawing.Point(30, 120);
+            this.customLedsCheck.Name = "customLedsCheck";
+            this.customLedsCheck.Size = new System.Drawing.Size(127, 20);
+            this.customLedsCheck.TabIndex = 14;
+            this.customLedsCheck.Text = "Custom LEDs";
+            this.customLedsCheck.UseVisualStyleBackColor = true;
+            this.customLedsCheck.CheckedChanged += new System.EventHandler(this.customLedsCheck_CheckedChanged);
             // 
             // audioAlertCheck
             // 
@@ -88,7 +110,7 @@ namespace FlashForgeUI
             this.audioAlertCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.audioAlertCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.audioAlertCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.audioAlertCheck.Location = new System.Drawing.Point(395, 303);
+            this.audioAlertCheck.Location = new System.Drawing.Point(395, 347);
             this.audioAlertCheck.Name = "audioAlertCheck";
             this.audioAlertCheck.Size = new System.Drawing.Size(120, 20);
             this.audioAlertCheck.TabIndex = 13;
@@ -108,7 +130,7 @@ namespace FlashForgeUI
             this.visualAlertCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.visualAlertCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.visualAlertCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.visualAlertCheck.Location = new System.Drawing.Point(395, 257);
+            this.visualAlertCheck.Location = new System.Drawing.Point(395, 301);
             this.visualAlertCheck.Name = "visualAlertCheck";
             this.visualAlertCheck.Size = new System.Drawing.Size(121, 20);
             this.visualAlertCheck.TabIndex = 12;
@@ -128,7 +150,7 @@ namespace FlashForgeUI
             this.alertWhenCooledCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.alertWhenCooledCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.alertWhenCooledCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.alertWhenCooledCheck.Location = new System.Drawing.Point(30, 303);
+            this.alertWhenCooledCheck.Location = new System.Drawing.Point(30, 347);
             this.alertWhenCooledCheck.Name = "alertWhenCooledCheck";
             this.alertWhenCooledCheck.Size = new System.Drawing.Size(146, 20);
             this.alertWhenCooledCheck.TabIndex = 11;
@@ -148,7 +170,7 @@ namespace FlashForgeUI
             this.alertWhenDoneCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.alertWhenDoneCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.alertWhenDoneCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.alertWhenDoneCheck.Location = new System.Drawing.Point(30, 257);
+            this.alertWhenDoneCheck.Location = new System.Drawing.Point(30, 301);
             this.alertWhenDoneCheck.Name = "alertWhenDoneCheck";
             this.alertWhenDoneCheck.Size = new System.Drawing.Size(164, 20);
             this.alertWhenDoneCheck.TabIndex = 10;
@@ -232,7 +254,7 @@ namespace FlashForgeUI
             this.customCameraCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.customCameraCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.customCameraCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.customCameraCheck.Location = new System.Drawing.Point(30, 113);
+            this.customCameraCheck.Location = new System.Drawing.Point(30, 178);
             this.customCameraCheck.Name = "customCameraCheck";
             this.customCameraCheck.Size = new System.Drawing.Size(147, 20);
             this.customCameraCheck.TabIndex = 6;
@@ -272,7 +294,7 @@ namespace FlashForgeUI
             this.discordSyncCheck.EnabledUncheckedColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(158)))), ((int)(((byte)(161)))));
             this.discordSyncCheck.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.discordSyncCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.discordSyncCheck.Location = new System.Drawing.Point(30, 175);
+            this.discordSyncCheck.Location = new System.Drawing.Point(30, 240);
             this.discordSyncCheck.Name = "discordSyncCheck";
             this.discordSyncCheck.Size = new System.Drawing.Size(125, 20);
             this.discordSyncCheck.TabIndex = 4;
@@ -284,7 +306,7 @@ namespace FlashForgeUI
             // 
             this.discordWebhookBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.discordWebhookBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.discordWebhookBox.Location = new System.Drawing.Point(189, 176);
+            this.discordWebhookBox.Location = new System.Drawing.Point(189, 237);
             this.discordWebhookBox.Name = "discordWebhookBox";
             this.discordWebhookBox.Size = new System.Drawing.Size(310, 23);
             this.discordWebhookBox.TabIndex = 3;
@@ -293,7 +315,7 @@ namespace FlashForgeUI
             // 
             this.customCameraBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.customCameraBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.customCameraBox.Location = new System.Drawing.Point(189, 114);
+            this.customCameraBox.Location = new System.Drawing.Point(189, 175);
             this.customCameraBox.Name = "customCameraBox";
             this.customCameraBox.Size = new System.Drawing.Size(310, 23);
             this.customCameraBox.TabIndex = 2;
@@ -302,7 +324,7 @@ namespace FlashForgeUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(553, 355);
+            this.ClientSize = new System.Drawing.Size(553, 392);
             this.Controls.Add(this.Settings);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximumSize = new System.Drawing.Size(1920, 1040);
@@ -314,6 +336,8 @@ namespace FlashForgeUI
             this.Settings.PerformLayout();
             this.ResumeLayout(false);
         }
+
+        private ReaLTaiizor.Controls.HopeCheckBox customLedsCheck;
 
         private ReaLTaiizor.Controls.HopeCheckBox visualAlertCheck;
         private ReaLTaiizor.Controls.HopeCheckBox audioAlertCheck;

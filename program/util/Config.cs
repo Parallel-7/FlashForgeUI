@@ -38,7 +38,11 @@ namespace FlashForgeUI.program.util
         public bool DebugMode { get; set; }
         
         public string WebhookUrl { get; set; }
-
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(false)]
+        public bool CustomLeds { get; set; }
+        
         public bool CustomCamera { get; set; }
         public string CustomCameraUrl { get; set; }
 

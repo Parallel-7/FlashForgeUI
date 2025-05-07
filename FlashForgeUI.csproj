@@ -47,7 +47,7 @@
           <HintPath>packages\Discord.Webhook.1.0.9\lib\netstandard2.0\Discord Webhook.dll</HintPath>
         </Reference>
         <Reference Include="FiveMApi">
-          <HintPath>..\FiveMApi\bin\Debug\FiveMApi.dll</HintPath>
+          <HintPath>..\ff-5mp-api\FiveMApi\bin\Debug\netstandard2.0\FiveMApi.dll</HintPath>
         </Reference>
         <Reference Include="HttpMultipartParser, Version=8.4.0.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">
           <HintPath>packages\HttpMultipartParser.8.4.0\lib\net48\HttpMultipartParser.dll</HintPath>

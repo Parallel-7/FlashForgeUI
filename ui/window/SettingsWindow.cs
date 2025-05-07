@@ -70,6 +70,8 @@ namespace FlashForgeUI
 
             alertWhenCooledCheck.Checked = _ui.Config.AlertWhenCooled;
             alertWhenDoneCheck.Checked = _ui.Config.AlertWhenComplete;
+
+            customLedsCheck.Checked = _ui.Config.CustomLeds;
         }
 
         private void webUICheck_CheckedChanged(object sender, EventArgs e)
@@ -148,6 +150,12 @@ namespace FlashForgeUI
         private void audioAlertCheck_CheckedChanged(object sender, EventArgs e)
         {
             _ui.Config.AudioAlerts = audioAlertCheck.Checked;
+            Save();
+        }
+
+        private void customLedsCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _ui.Config.CustomLeds = customLedsCheck.Checked;
             Save();
         }
     }

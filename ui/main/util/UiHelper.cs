@@ -163,9 +163,9 @@ namespace FlashForgeUI.ui.main.util
                 _ui.clearPlatformButton.Visible = false;
             }
             
-            if (!_ui.PrinterClient.LedControl)
+            if (!_ui.PrinterClient.LedControl && !_ui.Config.CustomLeds)
             {
-                _ui.AppendLog("LEDs are not equipped or properly configured on this printer.");
+                _ui.AppendLog("LEDs are not equipped on this printer. If this is a mistake, enable Custom LEDs in the Settings Menu.");
                 _ui.ledOffButton.Visible = false;
                 _ui.ledOnButton.Visible = false;
             }
