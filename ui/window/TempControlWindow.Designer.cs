@@ -32,6 +32,7 @@ namespace FlashForgeUI
         private void InitializeComponent()
         {
             this.nightForm1 = new ReaLTaiizor.Forms.NightForm();
+            this.nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
             this.cancelButton = new ReaLTaiizor.Controls.HopeButton();
             this.setButton = new ReaLTaiizor.Controls.HopeButton();
             this.tempBox = new System.Windows.Forms.TextBox();
@@ -43,6 +44,7 @@ namespace FlashForgeUI
             // nightForm1
             // 
             this.nightForm1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(48)))), ((int)(((byte)(51)))));
+            this.nightForm1.Controls.Add(this.nightControlBox1);
             this.nightForm1.Controls.Add(this.cancelButton);
             this.nightForm1.Controls.Add(this.setButton);
             this.nightForm1.Controls.Add(this.tempBox);
@@ -61,6 +63,30 @@ namespace FlashForgeUI
             this.nightForm1.Text = "nightForm1";
             this.nightForm1.TextAlignment = ReaLTaiizor.Forms.NightForm.Alignment.Left;
             this.nightForm1.TitleBarTextColor = System.Drawing.Color.Gainsboro;
+            // 
+            // nightControlBox1
+            // 
+            this.nightControlBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nightControlBox1.BackColor = System.Drawing.Color.Transparent;
+            this.nightControlBox1.CloseHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(199)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.nightControlBox1.CloseHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.nightControlBox1.DefaultLocation = true;
+            this.nightControlBox1.DisableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
+            this.nightControlBox1.DisableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(105)))), ((int)(((byte)(105)))), ((int)(((byte)(105)))));
+            this.nightControlBox1.EnableCloseColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.EnableMaximizeButton = true;
+            this.nightControlBox1.EnableMaximizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.EnableMinimizeButton = true;
+            this.nightControlBox1.EnableMinimizeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(160)))));
+            this.nightControlBox1.Location = new System.Drawing.Point(330, 0);
+            this.nightControlBox1.MaximizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.nightControlBox1.MaximizeHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.MinimizeHoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.nightControlBox1.MinimizeHoverForeColor = System.Drawing.Color.White;
+            this.nightControlBox1.Name = "nightControlBox1";
+            this.nightControlBox1.Size = new System.Drawing.Size(139, 31);
+            this.nightControlBox1.TabIndex = 5;
             // 
             // cancelButton
             // 
@@ -81,6 +107,7 @@ namespace FlashForgeUI
             this.cancelButton.Text = "Cancel";
             this.cancelButton.TextColor = System.Drawing.Color.White;
             this.cancelButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // setButton
             // 
@@ -101,6 +128,7 @@ namespace FlashForgeUI
             this.setButton.Text = "Set";
             this.setButton.TextColor = System.Drawing.Color.White;
             this.setButton.WarningColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(162)))), ((int)(((byte)(60)))));
+            this.setButton.Click += new System.EventHandler(this.setButton_Click);
             // 
             // tempBox
             // 
@@ -156,6 +184,8 @@ namespace FlashForgeUI
             this.nightForm1.PerformLayout();
             this.ResumeLayout(false);
         }
+
+        private ReaLTaiizor.Controls.NightControlBox nightControlBox1;
 
         private ReaLTaiizor.Controls.HopeButton cancelButton;
 
