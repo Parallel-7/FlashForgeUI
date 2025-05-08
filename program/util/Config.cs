@@ -71,6 +71,7 @@ namespace FlashForgeUI.program.util
                 WebhookUrl = "";
                 CustomCamera = false;
                 CustomCameraUrl = "";
+                CustomLeds = false;
                 Save();
                 return this;
             }

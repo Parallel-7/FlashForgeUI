@@ -42,7 +42,20 @@ namespace FlashForgeUI
         
         private void AppendLog(string text)
         {
-            logBox.Invoke(new Action<string>(AppendLog), text);
+            if (logBox.InvokeRequired)
+            {
+                logBox.Invoke(new Action(() => {
+                    logBox.AppendText(text + Environment.NewLine);
+                    logBox.SelectionStart = logBox.TextLength;
+                    logBox.ScrollToCaret();
+                }));
+            }
+            else
+            {
+                logBox.AppendText(text + Environment.NewLine);
+                logBox.SelectionStart = logBox.TextLength;
+                logBox.ScrollToCaret();
+            }
         }
     }
 }

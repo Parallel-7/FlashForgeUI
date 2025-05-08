@@ -55,7 +55,7 @@ namespace FlashForgeUI
                 discordWebhookBox.Text = _ui.Config.WebhookUrl;
                 discordSyncCheck.Checked = true;
             }
-
+            
             // webUI toggle
             webUICheck.Checked = _ui.Config.WebUi;
             
@@ -109,7 +109,7 @@ namespace FlashForgeUI
                 }
 
                 _ui.Config.DiscordSync = true;
-                _ui.Config.WebhookUrl = customCameraBox.Text;
+                _ui.Config.WebhookUrl = discordWebhookBox.Text;
                 Save();
             }
             else _ui.Config.DiscordSync = false;

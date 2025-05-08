@@ -56,6 +56,8 @@ namespace FlashForgeUI.ui.main
             if (string.IsNullOrEmpty(Config.WebhookUrl))
             {
                 MessageBox.Show("Invalid (or missing) webhook url in config.json! Discord sync disabled");
+                Config.DiscordSync = false;
+                Config.Save();
                 return;
             }
             Webhook = new WebhookHelper(Config.WebhookUrl, this);
