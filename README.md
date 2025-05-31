@@ -1,5 +1,8 @@
-# FlashForgeUI
-*WIP* Monitoring &amp; Control software for FlashForge printers, powered by [this](https://github.com/GhostTypes/ff-5mp-api) API
+# FlashForgeUI ⚠️ DEPRECATED
+
+> **Note**: This project has been superseded by the new Electron-based version at [FlashForgeUI-Electron](https://github.com/Parallel-7/FlashForgeUI-Electron). Please use the new version for better performance and features.
+
+*WIP* Monitoring & Control software for FlashForge printers, powered by [this](https://github.com/GhostTypes/ff-5mp-api) API
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/Parallel-7/FlashForgeUI)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Parallel-7/FlashForgeUI)
@@ -10,41 +13,53 @@
 ![image](https://github.com/user-attachments/assets/97f5e9b0-004c-41ff-99d9-86570c5572e4)
 ![image](https://github.com/user-attachments/assets/4970d19d-c640-46fe-b3b6-c673b811ed6a)
 
-## Setup
-- This require LAN-only mode enabled, which can be found from setting -> wifi -> network mode
-- After enabling, make note of the code at the bottom left, you'll use this during the initial paring process
-- This process only needs to be completed once, and you may toggle in and out of LAN-only mode without the code changing.
-- After initial pairing, FlashForgeUI will automatically find and connect to your printer when launched.
+## 🚀 Setup
+1. Enable LAN-only mode in `setting -> wifi -> network mode`
+2. Note the pairing code displayed at the bottom left
+3. Use this code during initial pairing process
+4. Done! The app will auto-connect on future launches
 
-## Features
--  Webcam preview / Job Name / Progress (%)
--  Display current nozzle size/filament type (filament type is not sent by firmware until a job is started)
--  Job info panel (Current layer, ETA, job run time, weight used, length used)
--  Model preview panel
--  Temperature panel (Current bed/extruder temp, set/clear them)
--  Fan(s) panel (Current speed, set/clear them)
--  Printer status panel (Status, total run time, total filament used)
--  Filtration status panel (Current filtration mode, TVOC level, toggle internal/external filtration/off)
--  Adjust current speed offset/z-axis offset
+## ✨ Features
 
-- Additional controls
-   - Home axes (not present in any FlashForge software for some reason..)
-   - Send custom G/MCode 
-   - Control built-in LEDs
-   - Pause/Resume/Stop current job & clear cancelled/completed job state
-   - Upload new job (.gcode or .3mf) or start a local job (from printer storage)
-   - Filament swap routine (WIP)
+### 📊 Main Dashboard
+| Feature | Description |
+|---------|------------|
+| 📷 Webcam Preview | Live feed with job name and progress |
+| 🎯 Nozzle Info | Current size and filament type* |
+| 📈 Job Statistics | Layer count, ETA, runtime, material usage |
+| 🎨 Model Preview | 3D model visualization |
 
-## Additional Features
--  WebUI with the same controls/information
--  Discord notifications
-    - Periodic status updates (job info + webcam capture)
-    - Notify on print completion (and when job is ready for removal)
-    - Notify on status changes
-   
-# Compatibility
-- Full support for the 5M (Pro) [FW 2.7.8 - 3.1.5]
-- Support for any FlashForge printer with wifi capability is possible
+*Filament type is only shown when a job is active
+
+### 🛠️ Control Panels
+| Panel | Functions |
+|-------|-----------|
+| 🌡️ Temperature | Monitor and control bed/extruder temps |
+| 💨 Fans | View and adjust fan speeds |
+| ℹ️ Printer Status | Monitor runtime and material usage |
+| 🌬️ Filtration | Control modes, check TVOC levels |
+| ⚙️ Speed & Z-Offset | Adjust printing parameters |
+
+### 🎮 Additional Controls
+- 🏠 Home axes functionality
+- 💻 Custom G/MCode input
+- 💡 LED control
+- ⏯️ Job control (pause/resume/stop)
+- 📤 Job upload (.gcode/.3mf)
+- 🔄 Filament swap routine (WIP)
+
+### 🌐 Extended Features
+- 🖥️ WebUI interface
+- 🤖 Discord Integration
+  - 📊 Status updates with webcam shots
+  - ✅ Print completion notifications
+  - 🔔 Status change alerts
+
+## 🔧 Compatibility
+| Printer | Support Level | Firmware Versions |
+|---------|---------------|------------------|
+| FlashForge 5M (Pro) | ✅ Full | 2.7.8 - 3.1.5 |
+| Other WiFi Models | 🟡 Possible | Varies |
 
 
 <a href="https://star-history.com/#Parallel-7/FlashForgeUI&Date">
